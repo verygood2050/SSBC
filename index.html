@@ -196,6 +196,37 @@
             margin-bottom: 12px;
         }
 
+        .auth-settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .auth-setting-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+        }
+
+        .auth-setting-item:hover {
+            background: var(--bg-warm);
+        }
+
+        .auth-setting-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .auth-setting-item span {
+            font-size: 0.9rem;
+        }
+
         .main-content { max-width: 600px; margin: 0 auto; padding: 20px; }
 
         .section { display: none; animation: fadeIn 0.3s ease; }
@@ -1604,6 +1635,48 @@
                     <button class="btn btn-primary btn-block mt-16" onclick="changeAdminPassword()">비밀번호 변경</button>
                 </div>
 
+                <!-- 관리자 인증 필요 항목 설정 (관리자 모드일 때만) -->
+                <div class="settings-section" id="adminAuthSection" style="display:none;">
+                    <h4 class="settings-title">🔐 관리자 인증 필요 항목</h4>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">
+                        체크된 항목은 등록/수정/삭제 시 관리자 인증이 필요합니다.
+                    </p>
+                    <div class="auth-settings-list">
+                        <label class="auth-setting-item">
+                            <input type="checkbox" id="authNotice" onchange="saveAdminSettings()"> 
+                            <span>📢 공지사항</span>
+                        </label>
+                        <label class="auth-setting-item">
+                            <input type="checkbox" id="authSchedule" onchange="saveAdminSettings()"> 
+                            <span>📅 일정</span>
+                        </label>
+                        <label class="auth-setting-item">
+                            <input type="checkbox" id="authPrayer" onchange="saveAdminSettings()"> 
+                            <span>🙏 기도제목</span>
+                        </label>
+                        <label class="auth-setting-item">
+                            <input type="checkbox" id="authThanks" onchange="saveAdminSettings()"> 
+                            <span>💝 감사제목</span>
+                        </label>
+                        <label class="auth-setting-item">
+                            <input type="checkbox" id="authDepartment" onchange="saveAdminSettings()"> 
+                            <span>👥 부서 관리</span>
+                        </label>
+                        <label class="auth-setting-item">
+                            <input type="checkbox" id="authDeptPost" onchange="saveAdminSettings()"> 
+                            <span>📝 부서 게시글</span>
+                        </label>
+                        <label class="auth-setting-item">
+                            <input type="checkbox" id="authLinks" onchange="saveAdminSettings()"> 
+                            <span>⭐ 즐겨찾기</span>
+                        </label>
+                        <label class="auth-setting-item">
+                            <input type="checkbox" id="authVerse" onchange="saveAdminSettings()"> 
+                            <span>📖 오늘의 말씀</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- 데이터 백업 -->
                 <div class="settings-section">
                     <h4 class="settings-title">💾 데이터 백업</h4>
@@ -1706,6 +1779,18 @@
         // 관리자 설정
         var adminPassword = null; // Firebase에서 로드
         var isAdminMode = false;
+        
+        // 관리자 인증 필요 여부 설정 (기본값)
+        var adminSettings = {
+            notice: true,      // 공지사항
+            schedule: true,    // 일정
+            prayer: false,     // 기도제목
+            thanks: false,     // 감사제목
+            department: true,  // 부서 관리
+            deptPost: true,    // 부서 게시글
+            links: true,       // 즐겨찾기
+            verse: true        // 오늘의 말씀
+        };
 
         var linkIcons = [
             // 기본
@@ -1901,6 +1986,25 @@
                     console.log('관리자 비밀번호를 설정해주세요');
                 }
             });
+
+            // 관리자 인증 설정
+            db.ref('settings/adminAuth').on('value', function(snap) {
+                var saved = snap.val();
+                if (saved) {
+                    adminSettings = {
+                        notice: saved.notice !== false,
+                        schedule: saved.schedule !== false,
+                        prayer: saved.prayer === true,
+                        thanks: saved.thanks === true,
+                        department: saved.department !== false,
+                        deptPost: saved.deptPost !== false,
+                        links: saved.links !== false,
+                        verse: saved.verse !== false
+                    };
+                }
+                console.log('관리자 인증 설정 로드:', adminSettings);
+                updateAuthSettingsUI();
+            });
         }
 
         // ========== 유틸리티 ==========
@@ -1947,6 +2051,7 @@
             var badge = document.getElementById('adminBadge');
             var passwordSection = document.getElementById('adminPasswordSection');
             var restoreSection = document.getElementById('restoreSection');
+            var authSection = document.getElementById('adminAuthSection');
 
             if (isAdminMode) {
                 statusText.textContent = '✅ 활성화됨';
@@ -1956,6 +2061,8 @@
                 badge.style.display = 'inline-block';
                 passwordSection.style.display = 'block';
                 restoreSection.style.display = 'block';
+                authSection.style.display = 'block';
+                updateAuthSettingsUI();
             } else {
                 statusText.textContent = '비활성화';
                 statusText.style.color = 'var(--text-secondary)';
@@ -1964,6 +2071,7 @@
                 badge.style.display = 'none';
                 passwordSection.style.display = 'none';
                 restoreSection.style.display = 'none';
+                authSection.style.display = 'none';
             }
         }
 
@@ -2018,18 +2126,64 @@
             }
         }
 
-        function requireAdmin(action) {
-            if (isAdminMode) {
+        function requireAdmin(action, feature) {
+            // feature가 지정되지 않았거나 해당 기능이 인증 필요로 설정된 경우
+            var needsAuth = !feature || adminSettings[feature] === true;
+            
+            if (!needsAuth) {
+                // 인증 불필요
+                action();
+            } else if (isAdminMode) {
+                // 이미 관리자 모드
                 action();
             } else if (!adminPassword) {
                 // 비밀번호 미설정 시 자유 접근 (첫 사용)
                 action();
             } else {
+                // 인증 필요
                 pendingAdminAction = action;
                 document.getElementById('adminPasswordInput').value = '';
                 document.getElementById('adminPasswordError').classList.remove('show');
                 openModal('adminAuthModal');
             }
+        }
+
+        function updateAuthSettingsUI() {
+            var checkboxes = {
+                'authNotice': adminSettings.notice,
+                'authSchedule': adminSettings.schedule,
+                'authPrayer': adminSettings.prayer,
+                'authThanks': adminSettings.thanks,
+                'authDepartment': adminSettings.department,
+                'authDeptPost': adminSettings.deptPost,
+                'authLinks': adminSettings.links,
+                'authVerse': adminSettings.verse
+            };
+            
+            for (var id in checkboxes) {
+                var el = document.getElementById(id);
+                if (el) el.checked = checkboxes[id];
+            }
+        }
+
+        function saveAdminSettings() {
+            if (!db) return;
+            
+            var newSettings = {
+                notice: document.getElementById('authNotice').checked,
+                schedule: document.getElementById('authSchedule').checked,
+                prayer: document.getElementById('authPrayer').checked,
+                thanks: document.getElementById('authThanks').checked,
+                department: document.getElementById('authDepartment').checked,
+                deptPost: document.getElementById('authDeptPost').checked,
+                links: document.getElementById('authLinks').checked,
+                verse: document.getElementById('authVerse').checked
+            };
+            
+            db.ref('settings/adminAuth').set(newSettings).then(function() {
+                adminSettings = newSettings;
+                showToast('설정이 저장되었습니다');
+            });
         }
 
         function changeAdminPassword() {
@@ -2261,7 +2415,7 @@
                     console.error('저장 실패:', e);
                     showToast('저장 실패');
                 });
-            });
+            }, 'verse');
         }
 
         function renderVerseInputs() {
@@ -2304,7 +2458,7 @@
                     console.error('저장 실패:', e);
                     showToast('저장 실패');
                 });
-            });
+            }, 'verse');
         }
 
         function clearAllVerses() {
@@ -2439,7 +2593,7 @@
                         showToast('저장되었습니다');
                     });
                 }
-            });
+            }, 'links');
         }
 
         function deleteLink() {
@@ -2451,7 +2605,7 @@
                     closeModal('linkModal');
                     showToast('삭제되었습니다');
                 });
-            });
+            }, 'links');
         }
 
         // ========== 공지사항 ==========
@@ -2473,7 +2627,7 @@
                     document.getElementById('noticeAdminPanel').classList.remove('show');
                     showToast('공지가 등록되었습니다');
                 });
-            });
+            }, 'notice');
         }
 
         function renderNotices() {
@@ -2517,7 +2671,7 @@
                 db.ref('notices/' + id).remove();
                 db.ref('comments/' + id).remove();
                 showToast('삭제되었습니다');
-            });
+            }, 'notice');
         }
 
         // ========== 댓글 ==========
@@ -2860,7 +3014,7 @@
                     console.error('저장 실패:', e);
                     showToast('등록 실패');
                 });
-            });
+            }, 'schedule');
         }
 
         function renderCalendar() {
@@ -2940,7 +3094,7 @@
                 db.ref('schedules/' + id).remove().then(function() {
                     showToast('삭제되었습니다');
                 });
-            });
+            }, 'schedule');
         }
 
         // ========== 부서 ==========
@@ -3035,7 +3189,7 @@
                         showToast('저장 실패');
                     });
                 }
-            });
+            }, 'department');
         }
 
         function deleteDept(id) {
@@ -3046,7 +3200,7 @@
                 db.ref('deptPosts/' + id).remove();
                 renderDeptManageList();
                 showToast('삭제되었습니다');
-            });
+            }, 'department');
         }
 
         function togglePasswordField() {
@@ -3134,7 +3288,7 @@
                     document.getElementById('deptAdminPanel').classList.remove('show');
                     showToast('게시글이 등록되었습니다');
                 });
-            });
+            }, 'deptPost');
         }
 
         function deleteDeptPost(deptId, postId) {
@@ -3143,7 +3297,7 @@
                 if (!confirm('삭제하시겠습니까?')) return;
                 db.ref('deptPosts/' + deptId + '/' + postId).remove();
                 showToast('삭제되었습니다');
-            });
+            }, 'deptPost');
         }
     </script>
 </body>
