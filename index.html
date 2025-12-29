@@ -390,6 +390,77 @@
 
         .prayer-actions button:hover { opacity: 1; }
 
+        .thanks-item {
+            background: var(--bg-warm);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #e91e63;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .thanks-item:hover { background: #fce4ec; }
+
+        .thanks-author { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; }
+        .thanks-content { font-size: 0.95rem; line-height: 1.6; }
+        .thanks-date { font-size: 0.75rem; color: var(--text-light); margin-top: 8px; text-align: right; }
+
+        .thanks-actions {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .thanks-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.5;
+            font-size: 1rem;
+        }
+
+        .thanks-actions button:hover { opacity: 1; }
+
+        .detail-author {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .detail-content {
+            background: var(--bg-warm);
+            padding: 16px;
+            border-radius: 12px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            margin-bottom: 12px;
+        }
+
+        .detail-date {
+            text-align: right;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+
+        .prayer-item { cursor: pointer; }
+        .prayer-item:hover { background: #fff8e6; }
+
+        .comment-count-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
         .calendar-header {
             display: flex;
             align-items: center;
@@ -620,18 +691,20 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            padding: 8px 12px;
+            gap: 2px;
+            padding: 6px 8px;
             color: var(--text-light);
             cursor: pointer;
             background: none;
             border: none;
             font-family: inherit;
+            min-width: 0;
+            flex: 1;
         }
 
         .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 1.4rem; }
-        .nav-text { font-size: 0.65rem; font-weight: 500; }
+        .nav-icon { font-size: 1.3rem; }
+        .nav-text { font-size: 0.6rem; font-weight: 500; }
 
         .modal-overlay {
             display: none;
@@ -1152,6 +1225,19 @@
             </div>
         </section>
 
+        <section id="thanks" class="section">
+            <div class="card">
+                <h3 class="card-title">💝 감사제목</h3>
+                <div class="month-selector">
+                    <button class="month-btn" onclick="changeThanksMonth(-1)">‹</button>
+                    <span class="current-month" id="currentThanksMonth"></span>
+                    <button class="month-btn" onclick="changeThanksMonth(1)">›</button>
+                </div>
+                <button class="btn btn-primary btn-block mb-16" onclick="openThanksModal()">✏️ 감사제목 올리기</button>
+                <div id="thanksList"></div>
+            </div>
+        </section>
+
         <section id="department" class="section">
             <div class="card">
                 <div class="dept-header">
@@ -1194,8 +1280,9 @@
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="showSection('home', this)"><span class="nav-icon">🏠</span><span class="nav-text">홈</span></button>
         <button class="nav-item" onclick="showSection('notice', this)"><span class="nav-icon">📢</span><span class="nav-text">공지</span></button>
-        <button class="nav-item" onclick="showSection('prayer', this)"><span class="nav-icon">🙏</span><span class="nav-text">기도</span></button>
         <button class="nav-item" onclick="showSection('schedule', this)"><span class="nav-icon">📅</span><span class="nav-text">일정</span></button>
+        <button class="nav-item" onclick="showSection('prayer', this)"><span class="nav-icon">🙏</span><span class="nav-text">기도</span></button>
+        <button class="nav-item" onclick="showSection('thanks', this)"><span class="nav-icon">💝</span><span class="nav-text">감사</span></button>
         <button class="nav-item" onclick="showSection('department', this)"><span class="nav-icon">👥</span><span class="nav-text">부서</span></button>
     </nav>
 
@@ -1217,6 +1304,73 @@
                     <textarea class="form-textarea" id="prayerContent" placeholder="기도제목을 나눠주세요"></textarea>
                 </div>
                 <button class="btn btn-primary btn-block" onclick="savePrayer()">등록하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="prayerDetailModal" onclick="if(event.target===this)closeModal('prayerDetailModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">🙏 기도제목</h3>
+                <button class="modal-close" onclick="closeModal('prayerDetailModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-author" id="prayerDetailAuthor"></div>
+                <div class="detail-content" id="prayerDetailContent"></div>
+                <div class="detail-date" id="prayerDetailDate"></div>
+                <div class="comments-section">
+                    <h4 class="comments-title">💬 댓글 <span id="prayerCommentCount"></span></h4>
+                    <div id="prayerComments"></div>
+                    <div class="comment-form">
+                        <input type="text" id="prayerCommentAuthor" placeholder="이름">
+                        <input type="text" id="prayerCommentContent" placeholder="댓글 입력">
+                        <button onclick="addPrayerComment()">등록</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="thanksModal" onclick="if(event.target===this)closeModal('thanksModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="thanksModalTitle">감사제목 올리기</h3>
+                <button class="modal-close" onclick="closeModal('thanksModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="thanksEditId">
+                <div class="form-group">
+                    <label class="form-label">이름</label>
+                    <input type="text" class="form-input" id="thanksAuthor" placeholder="익명 가능">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">감사제목</label>
+                    <textarea class="form-textarea" id="thanksContent" placeholder="감사한 일을 나눠주세요"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveThanks()">등록하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="thanksDetailModal" onclick="if(event.target===this)closeModal('thanksDetailModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">💝 감사제목</h3>
+                <button class="modal-close" onclick="closeModal('thanksDetailModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-author" id="thanksDetailAuthor"></div>
+                <div class="detail-content" id="thanksDetailContent"></div>
+                <div class="detail-date" id="thanksDetailDate"></div>
+                <div class="comments-section">
+                    <h4 class="comments-title">💬 댓글 <span id="thanksCommentCount"></span></h4>
+                    <div id="thanksComments"></div>
+                    <div class="comment-form">
+                        <input type="text" id="thanksCommentAuthor" placeholder="이름">
+                        <input type="text" id="thanksCommentContent" placeholder="댓글 입력">
+                        <button onclick="addThanksComment()">등록</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1523,6 +1677,7 @@
         // ========== 전역 변수 ==========
         var db = null;
         var currentPrayerMonth = new Date();
+        var currentThanksMonth = new Date();
         var currentCalendarMonth = new Date();
         var selectedDate = null;
         var currentDept = null;
@@ -1533,12 +1688,17 @@
 
         var notices = [];
         var prayers = [];
+        var thanks = [];
         var schedules = [];
         var links = [];
         var departments = [];
         var deptPosts = {};
         var comments = {};
+        var prayerComments = {};
+        var thanksComments = {};
         var dailyVerses = {};
+        var currentPrayerId = null;
+        var currentThanksId = null;
         
         // 관리자 설정
         var adminPassword = null; // Firebase에서 로드
@@ -1608,6 +1768,39 @@
                 prayers = [];
                 snap.forEach(function(c) { prayers.unshift({ id: c.key, ...c.val() }); });
                 renderPrayers();
+            });
+
+            // 감사제목
+            db.ref('thanks').on('value', function(snap) {
+                thanks = [];
+                snap.forEach(function(c) { thanks.unshift({ id: c.key, ...c.val() }); });
+                renderThanks();
+            });
+
+            // 기도제목 댓글
+            db.ref('prayerComments').on('value', function(snap) {
+                prayerComments = {};
+                snap.forEach(function(c) {
+                    prayerComments[c.key] = [];
+                    c.forEach(function(comment) {
+                        prayerComments[c.key].push({ id: comment.key, ...comment.val() });
+                    });
+                });
+                if (currentPrayerId) renderPrayerComments(currentPrayerId);
+                renderPrayers(); // 댓글 수 업데이트
+            });
+
+            // 감사제목 댓글
+            db.ref('thanksComments').on('value', function(snap) {
+                thanksComments = {};
+                snap.forEach(function(c) {
+                    thanksComments[c.key] = [];
+                    c.forEach(function(comment) {
+                        thanksComments[c.key].push({ id: comment.key, ...comment.val() });
+                    });
+                });
+                if (currentThanksId) renderThanksComments(currentThanksId);
+                renderThanks(); // 댓글 수 업데이트
             });
 
             // 일정
@@ -2400,14 +2593,180 @@
                 return;
             }
             container.innerHTML = filtered.map(function(p) {
-                return '<div class="prayer-item"><div class="prayer-actions"><button onclick="openPrayerModal(\'' + p.id + '\')">✏️</button><button onclick="deletePrayer(\'' + p.id + '\')">🗑️</button></div><p class="prayer-author">' + p.author + '</p><p class="prayer-content">' + p.content + '</p><p class="prayer-date">' + formatDate(p.date) + '</p></div>';
+                var commentCount = (prayerComments[p.id] || []).length;
+                var commentBadge = commentCount > 0 ? '<span class="comment-count-badge">💬 ' + commentCount + '</span>' : '';
+                return '<div class="prayer-item" onclick="openPrayerDetail(\'' + p.id + '\')"><div class="prayer-actions"><button onclick="event.stopPropagation();openPrayerModal(\'' + p.id + '\')">✏️</button><button onclick="event.stopPropagation();deletePrayer(\'' + p.id + '\')">🗑️</button></div><p class="prayer-author">' + p.author + commentBadge + '</p><p class="prayer-content">' + (p.content.length > 100 ? p.content.substring(0,100) + '...' : p.content) + '</p><p class="prayer-date">' + formatDate(p.date) + '</p></div>';
             }).join('');
+        }
+
+        function openPrayerDetail(id) {
+            var p = prayers.find(function(x) { return x.id === id; });
+            if (!p) return;
+            currentPrayerId = id;
+            document.getElementById('prayerDetailAuthor').textContent = '👤 ' + p.author;
+            document.getElementById('prayerDetailContent').textContent = p.content;
+            document.getElementById('prayerDetailDate').textContent = formatDateTime(p.date);
+            renderPrayerComments(id);
+            openModal('prayerDetailModal');
+        }
+
+        function renderPrayerComments(prayerId) {
+            var container = document.getElementById('prayerComments');
+            var list = prayerComments[prayerId] || [];
+            document.getElementById('prayerCommentCount').textContent = list.length > 0 ? '(' + list.length + ')' : '';
+
+            if (list.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-light)">첫 댓글을 남겨보세요!</p>';
+                return;
+            }
+            container.innerHTML = list.map(function(c) {
+                return '<div class="comment-item"><button class="comment-delete" onclick="deletePrayerComment(\'' + prayerId + '\',\'' + c.id + '\')">×</button><div class="comment-header"><span class="comment-author">' + c.author + '</span><span class="comment-date">' + formatDateTime(c.date) + '</span></div><p class="comment-content">' + c.content + '</p></div>';
+            }).join('');
+        }
+
+        function addPrayerComment() {
+            if (!db || !currentPrayerId) return;
+            var author = document.getElementById('prayerCommentAuthor').value.trim() || '익명';
+            var content = document.getElementById('prayerCommentContent').value.trim();
+            if (!content) { showToast('댓글을 입력해주세요'); return; }
+
+            db.ref('prayerComments/' + currentPrayerId).push({
+                author: author, content: content, date: new Date().toISOString()
+            }).then(function() {
+                document.getElementById('prayerCommentAuthor').value = '';
+                document.getElementById('prayerCommentContent').value = '';
+                showToast('댓글이 등록되었습니다');
+            });
+        }
+
+        function deletePrayerComment(prayerId, commentId) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('prayerComments/' + prayerId + '/' + commentId).remove();
         }
 
         function deletePrayer(id) {
             if (!db) return;
             if (!confirm('삭제하시겠습니까?')) return;
             db.ref('prayers/' + id).remove();
+            db.ref('prayerComments/' + id).remove();
+            showToast('삭제되었습니다');
+        }
+
+        // ========== 감사제목 ==========
+        function updateThanksMonth() {
+            var m = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+            document.getElementById('currentThanksMonth').textContent = currentThanksMonth.getFullYear() + '년 ' + m[currentThanksMonth.getMonth()];
+        }
+
+        function changeThanksMonth(d) {
+            currentThanksMonth.setMonth(currentThanksMonth.getMonth() + d);
+            renderThanks();
+        }
+
+        function openThanksModal(editId) {
+            document.getElementById('thanksEditId').value = '';
+            document.getElementById('thanksAuthor').value = '';
+            document.getElementById('thanksContent').value = '';
+            document.getElementById('thanksModalTitle').textContent = '감사제목 올리기';
+
+            if (editId) {
+                var t = thanks.find(function(x) { return x.id === editId; });
+                if (t) {
+                    document.getElementById('thanksEditId').value = editId;
+                    document.getElementById('thanksAuthor').value = t.author;
+                    document.getElementById('thanksContent').value = t.content;
+                    document.getElementById('thanksModalTitle').textContent = '감사제목 수정';
+                }
+            }
+            openModal('thanksModal');
+        }
+
+        function saveThanks() {
+            if (!db) { showToast('연결 실패'); return; }
+            var editId = document.getElementById('thanksEditId').value;
+            var author = document.getElementById('thanksAuthor').value.trim() || '익명';
+            var content = document.getElementById('thanksContent').value.trim();
+            if (!content) { showToast('감사제목을 입력해주세요'); return; }
+
+            var monthKey = currentThanksMonth.getFullYear() + '-' + String(currentThanksMonth.getMonth()+1).padStart(2,'0');
+            var data = { author: author, content: content, date: new Date().toISOString(), month: monthKey };
+
+            var promise = editId ? db.ref('thanks/' + editId).update(data) : db.ref('thanks').push(data);
+            promise.then(function() {
+                closeModal('thanksModal');
+                showToast(editId ? '수정되었습니다' : '등록되었습니다');
+            });
+        }
+
+        function renderThanks() {
+            updateThanksMonth();
+            var container = document.getElementById('thanksList');
+            var monthKey = currentThanksMonth.getFullYear() + '-' + String(currentThanksMonth.getMonth()+1).padStart(2,'0');
+            var filtered = thanks.filter(function(t) { return t.month === monthKey; });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">💝</div><p>이번 달 감사제목이 없습니다</p></div>';
+                return;
+            }
+            container.innerHTML = filtered.map(function(t) {
+                var commentCount = (thanksComments[t.id] || []).length;
+                var commentBadge = commentCount > 0 ? '<span class="comment-count-badge">💬 ' + commentCount + '</span>' : '';
+                return '<div class="thanks-item" onclick="openThanksDetail(\'' + t.id + '\')"><div class="thanks-actions"><button onclick="event.stopPropagation();openThanksModal(\'' + t.id + '\')">✏️</button><button onclick="event.stopPropagation();deleteThanks(\'' + t.id + '\')">🗑️</button></div><p class="thanks-author">' + t.author + commentBadge + '</p><p class="thanks-content">' + (t.content.length > 100 ? t.content.substring(0,100) + '...' : t.content) + '</p><p class="thanks-date">' + formatDate(t.date) + '</p></div>';
+            }).join('');
+        }
+
+        function openThanksDetail(id) {
+            var t = thanks.find(function(x) { return x.id === id; });
+            if (!t) return;
+            currentThanksId = id;
+            document.getElementById('thanksDetailAuthor').textContent = '👤 ' + t.author;
+            document.getElementById('thanksDetailContent').textContent = t.content;
+            document.getElementById('thanksDetailDate').textContent = formatDateTime(t.date);
+            renderThanksComments(id);
+            openModal('thanksDetailModal');
+        }
+
+        function renderThanksComments(thanksId) {
+            var container = document.getElementById('thanksComments');
+            var list = thanksComments[thanksId] || [];
+            document.getElementById('thanksCommentCount').textContent = list.length > 0 ? '(' + list.length + ')' : '';
+
+            if (list.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-light)">첫 댓글을 남겨보세요!</p>';
+                return;
+            }
+            container.innerHTML = list.map(function(c) {
+                return '<div class="comment-item"><button class="comment-delete" onclick="deleteThanksComment(\'' + thanksId + '\',\'' + c.id + '\')">×</button><div class="comment-header"><span class="comment-author">' + c.author + '</span><span class="comment-date">' + formatDateTime(c.date) + '</span></div><p class="comment-content">' + c.content + '</p></div>';
+            }).join('');
+        }
+
+        function addThanksComment() {
+            if (!db || !currentThanksId) return;
+            var author = document.getElementById('thanksCommentAuthor').value.trim() || '익명';
+            var content = document.getElementById('thanksCommentContent').value.trim();
+            if (!content) { showToast('댓글을 입력해주세요'); return; }
+
+            db.ref('thanksComments/' + currentThanksId).push({
+                author: author, content: content, date: new Date().toISOString()
+            }).then(function() {
+                document.getElementById('thanksCommentAuthor').value = '';
+                document.getElementById('thanksCommentContent').value = '';
+                showToast('댓글이 등록되었습니다');
+            });
+        }
+
+        function deleteThanksComment(thanksId, commentId) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('thanksComments/' + thanksId + '/' + commentId).remove();
+        }
+
+        function deleteThanks(id) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('thanks/' + id).remove();
+            db.ref('thanksComments/' + id).remove();
             showToast('삭제되었습니다');
         }
 
