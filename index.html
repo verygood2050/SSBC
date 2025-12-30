@@ -12,6 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <!-- Mammoth.js for docx parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
     <style>
         :root {
@@ -490,6 +491,56 @@
             padding: 2px 6px;
             border-radius: 10px;
             margin-left: 8px;
+        }
+
+        .link-order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .link-order-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 12px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            cursor: grab;
+            user-select: none;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+
+        .link-order-item:active {
+            cursor: grabbing;
+        }
+
+        .link-order-item.sortable-ghost {
+            opacity: 0.4;
+            background: var(--bg-warm);
+        }
+
+        .link-order-item.sortable-chosen {
+            background: var(--bg-warm);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            transform: scale(1.02);
+            z-index: 10;
+        }
+
+        .link-order-item .drag-handle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .link-order-item .link-icon {
+            font-size: 1.4rem;
+        }
+
+        .link-order-item .link-name {
+            flex: 1;
+            font-weight: 500;
+            font-size: 0.95rem;
         }
 
         .calendar-header {
@@ -1455,6 +1506,21 @@
                     <button class="btn btn-primary" style="flex:1" onclick="saveLink()">저장</button>
                     <button class="btn btn-danger" id="deleteLinkBtn" style="display:none" onclick="deleteLink()">삭제</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="linkOrderModal" onclick="if(event.target===this)closeModal('linkOrderModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">↕️ 즐겨찾기 순서</h3>
+                <button class="modal-close" onclick="closeModal('linkOrderModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px; text-align:center;">
+                    드래그하여 순서를 변경하세요 📱
+                </p>
+                <div id="linkOrderList" class="link-order-list"></div>
             </div>
         </div>
     </div>
@@ -2542,10 +2608,15 @@
 
         // ========== 즐겨찾기 ==========
         function renderQuickLinks() {
-            var html = links.map(function(l) {
+            // order 기준 정렬
+            var sortedLinks = links.slice().sort(function(a, b) {
+                return (a.order || 0) - (b.order || 0);
+            });
+            var html = sortedLinks.map(function(l) {
                 return '<a href="' + l.url + '" target="_blank" class="quick-link" style="position:relative;"><span class="link-icon">' + (l.icon || '🔗') + '</span><span class="link-text">' + l.name + '</span><button class="link-edit-btn" onclick="event.preventDefault();event.stopPropagation();editLink(\'' + l.id + '\')">✏️</button></a>';
             }).join('');
             html += '<div class="quick-link add-link-btn" onclick="openLinkModal()"><span class="link-icon">➕</span><span class="link-text">추가</span></div>';
+            html += '<div class="quick-link add-link-btn" onclick="openLinkOrderModal()" style="background:var(--text-secondary);"><span class="link-icon">↕️</span><span class="link-text">순서</span></div>';
             document.getElementById('quickLinks').innerHTML = html;
         }
 
@@ -2588,6 +2659,11 @@
                         showToast('저장되었습니다');
                     });
                 } else {
+                    // 새 링크는 마지막 순서로 추가
+                    var maxOrder = links.reduce(function(max, l) {
+                        return Math.max(max, l.order || 0);
+                    }, 0);
+                    data.order = maxOrder + 1;
                     db.ref('links').push(data).then(function() {
                         closeModal('linkModal');
                         showToast('저장되었습니다');
@@ -2604,6 +2680,70 @@
                 db.ref('links/' + id).remove().then(function() {
                     closeModal('linkModal');
                     showToast('삭제되었습니다');
+                });
+            }, 'links');
+        }
+
+        var linkSortable = null;
+
+        function openLinkOrderModal() {
+            renderLinkOrderList();
+            openModal('linkOrderModal');
+        }
+
+        function renderLinkOrderList() {
+            var container = document.getElementById('linkOrderList');
+            // order 기준 정렬
+            var sortedLinks = links.slice().sort(function(a, b) {
+                return (a.order || 0) - (b.order || 0);
+            });
+
+            if (sortedLinks.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-light);">즐겨찾기가 없습니다</p>';
+                return;
+            }
+
+            var html = sortedLinks.map(function(l) {
+                return '<div class="link-order-item" data-id="' + l.id + '">' +
+                    '<span class="drag-handle">☰</span>' +
+                    '<span class="link-icon">' + (l.icon || '🔗') + '</span>' +
+                    '<span class="link-name">' + l.name + '</span>' +
+                    '</div>';
+            }).join('');
+
+            container.innerHTML = html;
+
+            // SortableJS 초기화
+            if (linkSortable) {
+                linkSortable.destroy();
+            }
+
+            linkSortable = new Sortable(container, {
+                animation: 150,
+                handle: '.link-order-item',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: function(evt) {
+                    saveLinkOrder();
+                }
+            });
+        }
+
+        function saveLinkOrder() {
+            requireAdmin(function() {
+                if (!db) return;
+
+                var container = document.getElementById('linkOrderList');
+                var items = container.querySelectorAll('.link-order-item');
+                var updates = {};
+
+                items.forEach(function(item, index) {
+                    var id = item.getAttribute('data-id');
+                    updates['links/' + id + '/order'] = index;
+                });
+
+                db.ref().update(updates).then(function() {
+                    showToast('순서가 저장되었습니다');
                 });
             }, 'links');
         }
