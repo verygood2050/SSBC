@@ -258,6 +258,34 @@
             gap: 8px;
         }
 
+        .card-header-with-btn {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .card-header-with-btn .card-title {
+            margin-bottom: 0;
+        }
+
+        .card-manage-btn {
+            background: var(--bg-warm);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .card-manage-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
         .welcome-card {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white;
@@ -306,25 +334,6 @@
             background: transparent !important;
             color: var(--text-light) !important;
         }
-
-        .link-edit-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: var(--accent);
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            opacity: 0.8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .link-edit-btn:hover { opacity: 1; }
 
         .notice-item {
             padding: 16px;
@@ -502,18 +511,13 @@
         .link-order-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 14px 12px;
+            gap: 10px;
+            padding: 12px;
             background: white;
             border-radius: 10px;
             border: 1px solid var(--border);
-            cursor: grab;
             user-select: none;
             transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-        }
-
-        .link-order-item:active {
-            cursor: grabbing;
         }
 
         .link-order-item.sortable-ghost {
@@ -531,16 +535,49 @@
         .link-order-item .drag-handle {
             color: var(--text-light);
             font-size: 1.1rem;
+            cursor: grab;
+            padding: 4px;
+        }
+
+        .link-order-item .drag-handle:active {
+            cursor: grabbing;
         }
 
         .link-order-item .link-icon {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
         }
 
         .link-order-item .link-name {
             flex: 1;
             font-weight: 500;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .link-manage-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .link-manage-btns button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            background: var(--bg-warm);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .link-manage-btns .link-edit-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .link-manage-btns .link-delete-btn:hover {
+            background: #ffebee;
         }
 
         .calendar-header {
@@ -1243,7 +1280,10 @@
                 <p class="verse-reference" id="verseReference">데살로니가전서 5:16-18</p>
             </div>
             <div class="card">
-                <h3 class="card-title">⭐ 즐겨찾기</h3>
+                <div class="card-header-with-btn">
+                    <h3 class="card-title">⭐ 즐겨찾기</h3>
+                    <button class="card-manage-btn" onclick="openLinkManageModal()">⚙️ 관리</button>
+                </div>
                 <div class="quick-links" id="quickLinks"></div>
             </div>
             <div class="card">
@@ -1363,9 +1403,9 @@
     </main>
 
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="showSection('home', this)"><span class="nav-icon">🏠</span><span class="nav-text">홈</span></button>
         <button class="nav-item" onclick="showSection('notice', this)"><span class="nav-icon">📢</span><span class="nav-text">공지</span></button>
         <button class="nav-item" onclick="showSection('schedule', this)"><span class="nav-icon">📅</span><span class="nav-text">일정</span></button>
+        <button class="nav-item active" onclick="showSection('home', this)"><span class="nav-icon">🏠</span><span class="nav-text">홈</span></button>
         <button class="nav-item" onclick="showSection('prayer', this)"><span class="nav-icon">🙏</span><span class="nav-text">기도</span></button>
         <button class="nav-item" onclick="showSection('thanks', this)"><span class="nav-icon">💝</span><span class="nav-text">감사</span></button>
         <button class="nav-item" onclick="showSection('department', this)"><span class="nav-icon">👥</span><span class="nav-text">부서</span></button>
@@ -1513,12 +1553,13 @@
     <div class="modal-overlay" id="linkOrderModal" onclick="if(event.target===this)closeModal('linkOrderModal')">
         <div class="modal">
             <div class="modal-header">
-                <h3 class="modal-title">↕️ 즐겨찾기 순서</h3>
+                <h3 class="modal-title">⚙️ 즐겨찾기 관리</h3>
                 <button class="modal-close" onclick="closeModal('linkOrderModal')">✕</button>
             </div>
             <div class="modal-body">
+                <button class="btn btn-primary btn-block mb-16" onclick="closeModal('linkOrderModal');openLinkModal();">➕ 새 즐겨찾기 추가</button>
                 <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px; text-align:center;">
-                    드래그하여 순서를 변경하세요 📱
+                    ☰ 드래그하여 순서 변경
                 </p>
                 <div id="linkOrderList" class="link-order-list"></div>
             </div>
@@ -2613,10 +2654,13 @@
                 return (a.order || 0) - (b.order || 0);
             });
             var html = sortedLinks.map(function(l) {
-                return '<a href="' + l.url + '" target="_blank" class="quick-link" style="position:relative;"><span class="link-icon">' + (l.icon || '🔗') + '</span><span class="link-text">' + l.name + '</span><button class="link-edit-btn" onclick="event.preventDefault();event.stopPropagation();editLink(\'' + l.id + '\')">✏️</button></a>';
+                return '<a href="' + l.url + '" target="_blank" class="quick-link"><span class="link-icon">' + (l.icon || '🔗') + '</span><span class="link-text">' + l.name + '</span></a>';
             }).join('');
-            html += '<div class="quick-link add-link-btn" onclick="openLinkModal()"><span class="link-icon">➕</span><span class="link-text">추가</span></div>';
-            html += '<div class="quick-link add-link-btn" onclick="openLinkOrderModal()" style="background:var(--text-secondary);"><span class="link-icon">↕️</span><span class="link-text">순서</span></div>';
+            
+            if (sortedLinks.length === 0) {
+                html = '<p style="color:var(--text-light); text-align:center; padding:20px;">즐겨찾기가 없습니다. 관리에서 추가하세요.</p>';
+            }
+            
             document.getElementById('quickLinks').innerHTML = html;
         }
 
@@ -2686,7 +2730,7 @@
 
         var linkSortable = null;
 
-        function openLinkOrderModal() {
+        function openLinkManageModal() {
             renderLinkOrderList();
             openModal('linkOrderModal');
         }
@@ -2708,7 +2752,10 @@
                     '<span class="drag-handle">☰</span>' +
                     '<span class="link-icon">' + (l.icon || '🔗') + '</span>' +
                     '<span class="link-name">' + l.name + '</span>' +
-                    '</div>';
+                    '<div class="link-manage-btns">' +
+                    '<button class="link-edit-btn" onclick="editLinkFromManage(\'' + l.id + '\')">✏️</button>' +
+                    '<button class="link-delete-btn" onclick="deleteLinkDirect(\'' + l.id + '\')">🗑️</button>' +
+                    '</div></div>';
             }).join('');
 
             container.innerHTML = html;
@@ -2720,13 +2767,30 @@
 
             linkSortable = new Sortable(container, {
                 animation: 150,
-                handle: '.link-order-item',
+                handle: '.drag-handle',
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'sortable-chosen',
                 onEnd: function(evt) {
                     saveLinkOrder();
                 }
             });
+        }
+
+        function editLinkFromManage(id) {
+            closeModal('linkOrderModal');
+            editLink(id);
+        }
+
+        function deleteLinkDirect(id) {
+            requireAdmin(function() {
+                if (!db) return;
+                var link = links.find(function(l) { return l.id === id; });
+                if (!confirm('"' + (link ? link.name : '') + '" 을(를) 삭제하시겠습니까?')) return;
+                db.ref('links/' + id).remove().then(function() {
+                    showToast('삭제되었습니다');
+                    renderLinkOrderList();
+                });
+            }, 'links');
         }
 
         function saveLinkOrder() {
