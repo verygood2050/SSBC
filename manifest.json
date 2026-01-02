@@ -2,20 +2,20 @@
   "name": "서서울성서침례교회",
   "short_name": "서서울교회",
   "description": "West Seoul Bible Baptist Church App",
-  "start_url": "/",
+  "start_url": "/SSBC/",
   "display": "standalone",
   "background_color": "#1e3a5f",
   "theme_color": "#1e3a5f",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/SSBC/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/SSBC/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

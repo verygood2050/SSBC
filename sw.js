@@ -1,10 +1,10 @@
-const CACHE_NAME = 'church-app-v1';
+const CACHE_NAME = 'index';
 const urlsToCache = [
-  '/',
-  '/church-app-v11.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  '/SSBC/',
+  '/SSBC/index.html',
+  '/SSBC/manifest.json',
+  '/SSBC/icon-192.png',
+  '/SSBC/icon-512.png'
 ];
 
 // 설치 시 캐시 저장

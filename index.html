@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>서서울성서침례교회</title>
     <meta name="theme-color" content="#1e3a5f">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/SSBC/manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="서서울교회">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="apple-touch-icon" href="/SSBC/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/SSBC/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/SSBC/icon-512.png">
     <!-- ⭐ 여기까지 추가 끝 ⭐ -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
     
@@ -3588,7 +3588,7 @@
     // Service Worker 등록
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js')
+            navigator.serviceWorker.register('/SSBC/sw.js')
                 .then(function(registration) {
                     console.log('ServiceWorker 등록 성공:', registration.scope);
                 })
