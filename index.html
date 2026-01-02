@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>서서울성서침례교회</title>
     <meta name="theme-color" content="#1e3a5f">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="서서울교회">
+    <link rel="apple-touch-icon" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <!-- ⭐ 여기까지 추가 끝 ⭐ -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- Firebase SDK - 반드시 먼저 로드 -->
@@ -1255,6 +1264,65 @@
 
         .parse-result.success { border-left: 4px solid var(--success); }
         .parse-result.error { border-left: 4px solid var(--danger); }
+/* ⭐ 여기에 추가 시작 ⭐ */
+        /* PWA 설치 배너 스타일 */
+        .install-banner {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 150;
+            max-width: 90%;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        .install-banner.show { display: flex; }
+
+        .install-banner-icon { font-size: 1.5rem; }
+
+        .install-banner-text {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .install-banner-btn {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .install-banner-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* ⭐ 여기까지 추가 끝 ⭐ */
     </style>
 </head>
 <body>
@@ -1270,7 +1338,15 @@
             <div class="admin-badge" id="adminBadge" style="display:none;">👑 관리자</div>
         </div>
     </header>
-
+   <!-- ⭐ 여기에 추가 시작 ⭐ -->
+    <!-- PWA 설치 배너 -->
+    <div class="install-banner" id="installBanner">
+        <span class="install-banner-icon">📱</span>
+        <span class="install-banner-text">앱으로 설치하고 더 편하게 사용하세요!</span>
+        <button class="install-banner-btn" onclick="installApp()">설치</button>
+        <button class="install-banner-close" onclick="hideInstallBanner()">×</button>
+    </div>
+    <!-- ⭐ 여기까지 추가 끝 ⭐ -->
     <main class="main-content">
         <section id="home" class="section active">
             <div class="card welcome-card" style="position:relative;">
@@ -3504,5 +3580,80 @@
             }, 'deptPost');
         }
     </script>
+<!-- ⭐ 여기에 추가 시작 ⭐ -->
+    <script>
+    // ========== PWA 기능 ==========
+    var deferredPrompt;
+
+    // Service Worker 등록
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js')
+                .then(function(registration) {
+                    console.log('ServiceWorker 등록 성공:', registration.scope);
+                })
+                .catch(function(err) {
+                    console.log('ServiceWorker 등록 실패:', err);
+                });
+        });
+    }
+
+    // 설치 프롬프트 처리
+    window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // 설치 배너 표시 (이미 설치된 경우 제외)
+        if (!localStorage.getItem('installBannerDismissed')) {
+            setTimeout(function() {
+                document.getElementById('installBanner').classList.add('show');
+            }, 3000); // 3초 후 표시
+        }
+    });
+
+    // 앱 설치 함수
+    function installApp() {
+        if (!deferredPrompt) {
+            showToast('이미 설치되었거나 설치할 수 없습니다');
+            return;
+        }
+        
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function(choiceResult) {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('사용자가 앱 설치를 수락했습니다');
+                showToast('앱이 설치되었습니다! 홈 화면에서 확인하세요');
+            } else {
+                console.log('사용자가 앱 설치를 거부했습니다');
+            }
+            deferredPrompt = null;
+            hideInstallBanner();
+        });
+    }
+
+    // 설치 배너 숨기기
+    function hideInstallBanner() {
+        document.getElementById('installBanner').classList.remove('show');
+        localStorage.setItem('installBannerDismissed', 'true');
+    }
+
+    // 앱 설치 완료 감지
+    window.addEventListener('appinstalled', function() {
+        console.log('PWA 설치 완료');
+        hideInstallBanner();
+        showToast('앱이 성공적으로 설치되었습니다!');
+    });
+
+    // iOS에서 standalone 모드 확인
+    if (window.navigator.standalone) {
+        console.log('iOS standalone 모드에서 실행 중');
+    }
+
+    // Android에서 standalone 모드 확인
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('Android standalone 모드에서 실행 중');
+    }
+    </script>
+    <!-- ⭐ 여기까지 추가 끝 ⭐ -->
 </body>
 </html>
