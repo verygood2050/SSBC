@@ -5,15 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>서서울성서침례교회</title>
     <meta name="theme-color" content="#1e3a5f">
-    <link rel="manifest" href="/SSBC/manifest.json">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="서서울교회">
-    <link rel="apple-touch-icon" href="/SSBC/icon-192.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="/SSBC/icon-192.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="/SSBC/icon-512.png">
-    <!-- ⭐ 여기까지 추가 끝 ⭐ -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- Firebase SDK - 반드시 먼저 로드 -->
@@ -21,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <!-- Mammoth.js for docx parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
     <style>
         :root {
@@ -90,153 +80,6 @@
 
         .status-dot.connected { background: var(--success); }
 
-        .settings-btn {
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            font-size: 1rem;
-            cursor: pointer;
-            color: white;
-        }
-
-        .settings-btn:hover { background: rgba(255,255,255,0.3); }
-
-        .admin-badge {
-            display: inline-block;
-            background: var(--accent);
-            color: white;
-            font-size: 0.7rem;
-            padding: 4px 12px;
-            border-radius: 12px;
-            margin-top: 8px;
-        }
-
-        .settings-section {
-            background: var(--bg-warm);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-
-        .settings-title {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 12px;
-        }
-
-        .admin-status {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .admin-status span {
-            font-weight: 500;
-        }
-
-        .admin-status .btn {
-            padding: 8px 16px;
-            font-size: 0.85rem;
-        }
-
-        .security-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px;
-            background: #fff8e6;
-            border-radius: 8px;
-            border: 1px solid var(--accent);
-        }
-
-        .security-status.secure {
-            background: #e8f5e9;
-            border-color: var(--success);
-        }
-
-        .security-icon { font-size: 1.2rem; }
-
-        .guide-step {
-            padding: 12px;
-            border-left: 3px solid var(--primary);
-            margin-bottom: 12px;
-            background: var(--bg-warm);
-        }
-
-        .guide-step h4 {
-            color: var(--primary);
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-
-        .guide-step p {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        .guide-step a {
-            color: var(--primary);
-        }
-
-        .code-block {
-            background: var(--primary-dark);
-            color: #fff;
-            padding: 12px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            overflow-x: auto;
-            white-space: pre;
-        }
-
-        .admin-required-notice {
-            background: #fff8e6;
-            border: 1px solid var(--accent);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            color: var(--accent);
-            font-size: 0.9rem;
-            margin-bottom: 12px;
-        }
-
-        .auth-settings-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .auth-setting-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 1px solid var(--border);
-        }
-
-        .auth-setting-item:hover {
-            background: var(--bg-warm);
-        }
-
-        .auth-setting-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .auth-setting-item span {
-            font-size: 0.9rem;
-        }
-
         .main-content { max-width: 600px; margin: 0 auto; padding: 20px; }
 
         .section { display: none; animation: fadeIn 0.3s ease; }
@@ -265,34 +108,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .card-header-with-btn {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-        }
-
-        .card-header-with-btn .card-title {
-            margin-bottom: 0;
-        }
-
-        .card-manage-btn {
-            background: var(--bg-warm);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
-
-        .card-manage-btn:hover {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
         }
 
         .welcome-card {
@@ -343,6 +158,25 @@
             background: transparent !important;
             color: var(--text-light) !important;
         }
+
+        .link-edit-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .link-edit-btn:hover { opacity: 1; }
 
         .notice-item {
             padding: 16px;
@@ -439,155 +273,6 @@
         }
 
         .prayer-actions button:hover { opacity: 1; }
-
-        .thanks-item {
-            background: var(--bg-warm);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            border-left: 4px solid #e91e63;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .thanks-item:hover { background: #fce4ec; }
-
-        .thanks-author { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; }
-        .thanks-content { font-size: 0.95rem; line-height: 1.6; }
-        .thanks-date { font-size: 0.75rem; color: var(--text-light); margin-top: 8px; text-align: right; }
-
-        .thanks-actions {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            display: flex;
-            gap: 4px;
-        }
-
-        .thanks-actions button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-            opacity: 0.5;
-            font-size: 1rem;
-        }
-
-        .thanks-actions button:hover { opacity: 1; }
-
-        .detail-author {
-            font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 12px;
-            font-size: 1rem;
-        }
-
-        .detail-content {
-            background: var(--bg-warm);
-            padding: 16px;
-            border-radius: 12px;
-            line-height: 1.8;
-            white-space: pre-wrap;
-            margin-bottom: 12px;
-        }
-
-        .detail-date {
-            text-align: right;
-            color: var(--text-light);
-            font-size: 0.85rem;
-            margin-bottom: 16px;
-        }
-
-        .prayer-item { cursor: pointer; }
-        .prayer-item:hover { background: #fff8e6; }
-
-        .comment-count-badge {
-            display: inline-block;
-            background: var(--primary);
-            color: white;
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border-radius: 10px;
-            margin-left: 8px;
-        }
-
-        .link-order-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .link-order-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            background: white;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            user-select: none;
-            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
-        }
-
-        .link-order-item.sortable-ghost {
-            opacity: 0.4;
-            background: var(--bg-warm);
-        }
-
-        .link-order-item.sortable-chosen {
-            background: var(--bg-warm);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
-            transform: scale(1.02);
-            z-index: 10;
-        }
-
-        .link-order-item .drag-handle {
-            color: var(--text-light);
-            font-size: 1.1rem;
-            cursor: grab;
-            padding: 4px;
-        }
-
-        .link-order-item .drag-handle:active {
-            cursor: grabbing;
-        }
-
-        .link-order-item .link-icon {
-            font-size: 1.3rem;
-        }
-
-        .link-order-item .link-name {
-            flex: 1;
-            font-weight: 500;
-            font-size: 0.9rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .link-manage-btns {
-            display: flex;
-            gap: 4px;
-        }
-
-        .link-manage-btns button {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 6px;
-            background: var(--bg-warm);
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.2s;
-        }
-
-        .link-manage-btns .link-edit-btn:hover {
-            background: var(--primary-light);
-        }
-
-        .link-manage-btns .link-delete-btn:hover {
-            background: #ffebee;
-        }
 
         .calendar-header {
             display: flex;
@@ -819,20 +504,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
-            padding: 6px 8px;
+            gap: 4px;
+            padding: 8px 12px;
             color: var(--text-light);
             cursor: pointer;
             background: none;
             border: none;
             font-family: inherit;
-            min-width: 0;
-            flex: 1;
         }
 
         .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 1.3rem; }
-        .nav-text { font-size: 0.6rem; font-weight: 500; }
+        .nav-icon { font-size: 1.4rem; }
+        .nav-text { font-size: 0.65rem; font-weight: 500; }
 
         .modal-overlay {
             display: none;
@@ -912,7 +595,7 @@
         .icon-picker {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
+            gap: 6px;
             margin-top: 8px;
             max-height: 200px;
             overflow-y: auto;
@@ -921,7 +604,7 @@
 
         .icon-option {
             padding: 8px;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             border: 2px solid var(--border);
             border-radius: 8px;
             cursor: pointer;
@@ -1264,65 +947,6 @@
 
         .parse-result.success { border-left: 4px solid var(--success); }
         .parse-result.error { border-left: 4px solid var(--danger); }
-/* ⭐ 여기에 추가 시작 ⭐ */
-        /* PWA 설치 배너 스타일 */
-        .install-banner {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-            display: none;
-            align-items: center;
-            gap: 12px;
-            z-index: 150;
-            max-width: 90%;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-
-        .install-banner.show { display: flex; }
-
-        .install-banner-icon { font-size: 1.5rem; }
-
-        .install-banner-text {
-            flex: 1;
-            font-size: 0.9rem;
-        }
-
-        .install-banner-btn {
-            background: white;
-            color: var(--primary);
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .install-banner-close {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        /* ⭐ 여기까지 추가 끝 ⭐ */
     </style>
 </head>
 <body>
@@ -1332,21 +956,11 @@
                 <span class="status-dot" id="statusDot"></span>
                 <span id="statusText">연결 중...</span>
             </div>
-            <button class="settings-btn" onclick="openSettingsModal()">⚙️</button>
             <h1 class="church-name">서서울성서침례교회</h1>
             <p class="church-subtitle">West Seoul Bible Baptist Church</p>
-            <div class="admin-badge" id="adminBadge" style="display:none;">👑 관리자</div>
         </div>
     </header>
-   <!-- ⭐ 여기에 추가 시작 ⭐ -->
-    <!-- PWA 설치 배너 -->
-    <div class="install-banner" id="installBanner">
-        <span class="install-banner-icon">📱</span>
-        <span class="install-banner-text">앱으로 설치하고 더 편하게 사용하세요!</span>
-        <button class="install-banner-btn" onclick="installApp()">설치</button>
-        <button class="install-banner-close" onclick="hideInstallBanner()">×</button>
-    </div>
-    <!-- ⭐ 여기까지 추가 끝 ⭐ -->
+
     <main class="main-content">
         <section id="home" class="section active">
             <div class="card welcome-card" style="position:relative;">
@@ -1356,10 +970,7 @@
                 <p class="verse-reference" id="verseReference">데살로니가전서 5:16-18</p>
             </div>
             <div class="card">
-                <div class="card-header-with-btn">
-                    <h3 class="card-title">⭐ 즐겨찾기</h3>
-                    <button class="card-manage-btn" onclick="openLinkManageModal()">⚙️ 관리</button>
-                </div>
+                <h3 class="card-title">⭐ 즐겨찾기</h3>
                 <div class="quick-links" id="quickLinks"></div>
             </div>
             <div class="card">
@@ -1426,19 +1037,6 @@
             </div>
         </section>
 
-        <section id="thanks" class="section">
-            <div class="card">
-                <h3 class="card-title">💝 감사제목</h3>
-                <div class="month-selector">
-                    <button class="month-btn" onclick="changeThanksMonth(-1)">‹</button>
-                    <span class="current-month" id="currentThanksMonth"></span>
-                    <button class="month-btn" onclick="changeThanksMonth(1)">›</button>
-                </div>
-                <button class="btn btn-primary btn-block mb-16" onclick="openThanksModal()">✏️ 감사제목 올리기</button>
-                <div id="thanksList"></div>
-            </div>
-        </section>
-
         <section id="department" class="section">
             <div class="card">
                 <div class="dept-header">
@@ -1479,11 +1077,10 @@
     </main>
 
     <nav class="bottom-nav">
-        <button class="nav-item" onclick="showSection('notice', this)"><span class="nav-icon">📢</span><span class="nav-text">공지</span></button>
-        <button class="nav-item" onclick="showSection('schedule', this)"><span class="nav-icon">📅</span><span class="nav-text">일정</span></button>
         <button class="nav-item active" onclick="showSection('home', this)"><span class="nav-icon">🏠</span><span class="nav-text">홈</span></button>
+        <button class="nav-item" onclick="showSection('notice', this)"><span class="nav-icon">📢</span><span class="nav-text">공지</span></button>
         <button class="nav-item" onclick="showSection('prayer', this)"><span class="nav-icon">🙏</span><span class="nav-text">기도</span></button>
-        <button class="nav-item" onclick="showSection('thanks', this)"><span class="nav-icon">💝</span><span class="nav-text">감사</span></button>
+        <button class="nav-item" onclick="showSection('schedule', this)"><span class="nav-icon">📅</span><span class="nav-text">일정</span></button>
         <button class="nav-item" onclick="showSection('department', this)"><span class="nav-icon">👥</span><span class="nav-text">부서</span></button>
     </nav>
 
@@ -1505,73 +1102,6 @@
                     <textarea class="form-textarea" id="prayerContent" placeholder="기도제목을 나눠주세요"></textarea>
                 </div>
                 <button class="btn btn-primary btn-block" onclick="savePrayer()">등록하기</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="prayerDetailModal" onclick="if(event.target===this)closeModal('prayerDetailModal')">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">🙏 기도제목</h3>
-                <button class="modal-close" onclick="closeModal('prayerDetailModal')">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="detail-author" id="prayerDetailAuthor"></div>
-                <div class="detail-content" id="prayerDetailContent"></div>
-                <div class="detail-date" id="prayerDetailDate"></div>
-                <div class="comments-section">
-                    <h4 class="comments-title">💬 댓글 <span id="prayerCommentCount"></span></h4>
-                    <div id="prayerComments"></div>
-                    <div class="comment-form">
-                        <input type="text" id="prayerCommentAuthor" placeholder="이름">
-                        <input type="text" id="prayerCommentContent" placeholder="댓글 입력">
-                        <button onclick="addPrayerComment()">등록</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="thanksModal" onclick="if(event.target===this)closeModal('thanksModal')">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title" id="thanksModalTitle">감사제목 올리기</h3>
-                <button class="modal-close" onclick="closeModal('thanksModal')">✕</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="thanksEditId">
-                <div class="form-group">
-                    <label class="form-label">이름</label>
-                    <input type="text" class="form-input" id="thanksAuthor" placeholder="익명 가능">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">감사제목</label>
-                    <textarea class="form-textarea" id="thanksContent" placeholder="감사한 일을 나눠주세요"></textarea>
-                </div>
-                <button class="btn btn-primary btn-block" onclick="saveThanks()">등록하기</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="thanksDetailModal" onclick="if(event.target===this)closeModal('thanksDetailModal')">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">💝 감사제목</h3>
-                <button class="modal-close" onclick="closeModal('thanksDetailModal')">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="detail-author" id="thanksDetailAuthor"></div>
-                <div class="detail-content" id="thanksDetailContent"></div>
-                <div class="detail-date" id="thanksDetailDate"></div>
-                <div class="comments-section">
-                    <h4 class="comments-title">💬 댓글 <span id="thanksCommentCount"></span></h4>
-                    <div id="thanksComments"></div>
-                    <div class="comment-form">
-                        <input type="text" id="thanksCommentAuthor" placeholder="이름">
-                        <input type="text" id="thanksCommentContent" placeholder="댓글 입력">
-                        <button onclick="addThanksComment()">등록</button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -1622,22 +1152,6 @@
                     <button class="btn btn-primary" style="flex:1" onclick="saveLink()">저장</button>
                     <button class="btn btn-danger" id="deleteLinkBtn" style="display:none" onclick="deleteLink()">삭제</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="linkOrderModal" onclick="if(event.target===this)closeModal('linkOrderModal')">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">⚙️ 즐겨찾기 관리</h3>
-                <button class="modal-close" onclick="closeModal('linkOrderModal')">✕</button>
-            </div>
-            <div class="modal-body">
-                <button class="btn btn-primary btn-block mb-16" onclick="closeModal('linkOrderModal');openLinkModal();">➕ 새 즐겨찾기 추가</button>
-                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px; text-align:center;">
-                    ☰ 드래그하여 순서 변경
-                </p>
-                <div id="linkOrderList" class="link-order-list"></div>
             </div>
         </div>
     </div>
@@ -1776,167 +1290,10 @@
 
     <div class="toast" id="toast"></div>
 
-    <!-- 관리자 인증 모달 -->
-    <div class="modal-overlay" id="adminAuthModal">
-        <div class="modal" style="max-width: 350px;">
-            <div class="modal-header">
-                <h3 class="modal-title">🔐 관리자 인증</h3>
-                <button class="modal-close" onclick="closeModal('adminAuthModal')">✕</button>
-            </div>
-            <div class="modal-body">
-                <p style="text-align:center; color:var(--text-secondary); margin-bottom:16px;">
-                    관리자 비밀번호를 입력하세요
-                </p>
-                <input type="password" class="form-input" id="adminPasswordInput" placeholder="비밀번호" style="text-align:center; font-size:1.1rem;" onkeypress="if(event.key==='Enter')verifyAdminPassword()">
-                <p class="password-error" id="adminPasswordError">비밀번호가 틀렸습니다</p>
-                <button class="btn btn-primary btn-block mt-16" onclick="verifyAdminPassword()">확인</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 설정 모달 -->
-    <div class="modal-overlay" id="settingsModal" onclick="if(event.target===this)closeModal('settingsModal')">
-        <div class="modal" style="max-width: 450px;">
-            <div class="modal-header">
-                <h3 class="modal-title">⚙️ 앱 설정</h3>
-                <button class="modal-close" onclick="closeModal('settingsModal')">✕</button>
-            </div>
-            <div class="modal-body">
-                <!-- 관리자 모드 상태 -->
-                <div class="settings-section">
-                    <h4 class="settings-title">👤 관리자 모드</h4>
-                    <div class="admin-status" id="adminStatusDisplay">
-                        <span id="adminStatusText">비활성화</span>
-                        <button class="btn btn-primary" id="adminToggleBtn" onclick="toggleAdminMode()">로그인</button>
-                    </div>
-                </div>
-
-                <!-- 관리자 비밀번호 설정 (관리자 모드일 때만) -->
-                <div class="settings-section" id="adminPasswordSection" style="display:none;">
-                    <h4 class="settings-title">🔑 관리자 비밀번호 변경</h4>
-                    <input type="password" class="form-input" id="newAdminPassword" placeholder="새 비밀번호 (4자리 이상)">
-                    <button class="btn btn-primary btn-block mt-16" onclick="changeAdminPassword()">비밀번호 변경</button>
-                </div>
-
-                <!-- 관리자 인증 필요 항목 설정 (관리자 모드일 때만) -->
-                <div class="settings-section" id="adminAuthSection" style="display:none;">
-                    <h4 class="settings-title">🔐 관리자 인증 필요 항목</h4>
-                    <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:12px;">
-                        체크된 항목은 등록/수정/삭제 시 관리자 인증이 필요합니다.
-                    </p>
-                    <div class="auth-settings-list">
-                        <label class="auth-setting-item">
-                            <input type="checkbox" id="authNotice" onchange="saveAdminSettings()"> 
-                            <span>📢 공지사항</span>
-                        </label>
-                        <label class="auth-setting-item">
-                            <input type="checkbox" id="authSchedule" onchange="saveAdminSettings()"> 
-                            <span>📅 일정</span>
-                        </label>
-                        <label class="auth-setting-item">
-                            <input type="checkbox" id="authPrayer" onchange="saveAdminSettings()"> 
-                            <span>🙏 기도제목</span>
-                        </label>
-                        <label class="auth-setting-item">
-                            <input type="checkbox" id="authThanks" onchange="saveAdminSettings()"> 
-                            <span>💝 감사제목</span>
-                        </label>
-                        <label class="auth-setting-item">
-                            <input type="checkbox" id="authDepartment" onchange="saveAdminSettings()"> 
-                            <span>👥 부서 관리</span>
-                        </label>
-                        <label class="auth-setting-item">
-                            <input type="checkbox" id="authDeptPost" onchange="saveAdminSettings()"> 
-                            <span>📝 부서 게시글</span>
-                        </label>
-                        <label class="auth-setting-item">
-                            <input type="checkbox" id="authLinks" onchange="saveAdminSettings()"> 
-                            <span>⭐ 즐겨찾기</span>
-                        </label>
-                        <label class="auth-setting-item">
-                            <input type="checkbox" id="authVerse" onchange="saveAdminSettings()"> 
-                            <span>📖 오늘의 말씀</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- 데이터 백업 -->
-                <div class="settings-section">
-                    <h4 class="settings-title">💾 데이터 백업</h4>
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">
-                        모든 데이터를 JSON 파일로 다운로드합니다.
-                    </p>
-                    <button class="btn btn-primary btn-block" onclick="backupData()">📥 백업 다운로드</button>
-                </div>
-
-                <!-- 데이터 복원 (관리자 모드일 때만) -->
-                <div class="settings-section" id="restoreSection" style="display:none;">
-                    <h4 class="settings-title">📤 데이터 복원</h4>
-                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px;">
-                        백업 파일에서 데이터를 복원합니다.
-                    </p>
-                    <input type="file" id="restoreFileInput" accept=".json" style="display:none" onchange="restoreData(this)">
-                    <button class="btn btn-block" style="background:var(--accent);color:white;" onclick="document.getElementById('restoreFileInput').click()">📤 백업 파일 선택</button>
-                </div>
-
-                <!-- Firebase 보안 규칙 안내 -->
-                <div class="settings-section">
-                    <h4 class="settings-title">🔒 보안 상태</h4>
-                    <div id="securityStatus" class="security-status">
-                        <span class="security-icon">⚠️</span>
-                        <span>보안 규칙을 설정해주세요</span>
-                    </div>
-                    <button class="btn btn-block mt-16" style="background:var(--text-secondary);color:white;" onclick="showSecurityGuide()">보안 설정 가이드</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 보안 가이드 모달 -->
-    <div class="modal-overlay" id="securityGuideModal" onclick="if(event.target===this)closeModal('securityGuideModal')">
-        <div class="modal" style="max-width: 550px;">
-            <div class="modal-header">
-                <h3 class="modal-title">🔒 Firebase 보안 설정 가이드</h3>
-                <button class="modal-close" onclick="closeModal('securityGuideModal')">✕</button>
-            </div>
-            <div class="modal-body">
-                <div class="guide-step">
-                    <h4>1단계: Firebase Console 접속</h4>
-                    <p><a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> 접속</p>
-                </div>
-                <div class="guide-step">
-                    <h4>2단계: 프로젝트 선택</h4>
-                    <p>church-app-cce2f 프로젝트 클릭</p>
-                </div>
-                <div class="guide-step">
-                    <h4>3단계: 규칙 설정</h4>
-                    <p>Realtime Database → 규칙(Rules) 탭 클릭</p>
-                </div>
-                <div class="guide-step">
-                    <h4>4단계: 아래 규칙 복사 후 붙여넣기</h4>
-                    <pre class="code-block">{
-  "rules": {
-    ".read": true,
-    ".write": true,
-    "settings": {
-      ".write": true
-    }
-  }
-}</pre>
-                    <button class="btn btn-block mt-16" onclick="copySecurityRules()">📋 규칙 복사</button>
-                </div>
-                <div class="guide-step">
-                    <h4>5단계: 게시(Publish) 버튼 클릭</h4>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         // ========== 전역 변수 ==========
         var db = null;
         var currentPrayerMonth = new Date();
-        var currentThanksMonth = new Date();
         var currentCalendarMonth = new Date();
         var selectedDate = null;
         var currentDept = null;
@@ -1947,51 +1304,24 @@
 
         var notices = [];
         var prayers = [];
-        var thanks = [];
         var schedules = [];
         var links = [];
         var departments = [];
         var deptPosts = {};
         var comments = {};
-        var prayerComments = {};
-        var thanksComments = {};
         var dailyVerses = {};
-        var currentPrayerId = null;
-        var currentThanksId = null;
-        
-        // 관리자 설정
-        var adminPassword = null; // Firebase에서 로드
-        var isAdminMode = false;
-        
-        // 관리자 인증 필요 여부 설정 (기본값)
-        var adminSettings = {
-            notice: true,      // 공지사항
-            schedule: true,    // 일정
-            prayer: false,     // 기도제목
-            thanks: false,     // 감사제목
-            department: true,  // 부서 관리
-            deptPost: true,    // 부서 게시글
-            links: true,       // 즐겨찾기
-            verse: true        // 오늘의 말씀
-        };
 
         var linkIcons = [
-            // 기본
-            '🔗', '⭐', '❤️', '💡', '🎯',
-            // 소통
-            '💬', '📧', '📱', '☎️', '💌',
-            // 미디어
-            '📺', '🎵', '🎬', '📷', '🎧',
-            // 학습/문서
-            '📖', '📚', '✏️', '📝', '🗂️',
-            // 웹/기술
-            '🌐', '💻', '🖥️', '⚙️', '🔍',
-            // 장소
-            '🏠', '⛪', '🏢', '🏫', '📍',
-            // 음식/생활
-            '☕', '🍽️', '🛒', '💰', '🎁',
-            // 자연/기타
-            '🌸', '🌈', '✝️', '🙏', '👨‍👩‍👧‍👦'
+            // 성경/신앙 아이콘
+            '✝️', '⛪', '🙏', '📖', '🕊️', '👼', '🔔', '🕯️', '💒', '✨',
+            '🌟', '❤️', '💝', '🤝', '🌈', '🌾', '🍞', '🐑', '🐟', '⭐',
+            '🌅', '💡', '🛐', '👨‍👩‍👧‍👦', '🙌',
+            // 미디어/소통
+            '📺', '🎵', '🎬', '📷', '🎧', '💬', '📧', '☎️', '💌', '🌐',
+            // 생활/도구
+            '☕', '🍽️', '🛒', '💰', '🎁', '🏠', '🏢', '📍', '🚗', '✈️',
+            // 학습/업무
+            '📱', '💻', '🔍', '📝', '✏️', '📚', '🗂️', '⚙️', '🎯', '🔗'
         ];
         var deptIcons = ['👔', '👗', '🌟', '🎓', '🧒', '🎵', '📚', '🎺', '🎹', '👨‍👩‍👧', '👴', '👵', '💒', '✝️', '📖', '🙏'];
 
@@ -2056,39 +1386,6 @@
                 prayers = [];
                 snap.forEach(function(c) { prayers.unshift({ id: c.key, ...c.val() }); });
                 renderPrayers();
-            });
-
-            // 감사제목
-            db.ref('thanks').on('value', function(snap) {
-                thanks = [];
-                snap.forEach(function(c) { thanks.unshift({ id: c.key, ...c.val() }); });
-                renderThanks();
-            });
-
-            // 기도제목 댓글
-            db.ref('prayerComments').on('value', function(snap) {
-                prayerComments = {};
-                snap.forEach(function(c) {
-                    prayerComments[c.key] = [];
-                    c.forEach(function(comment) {
-                        prayerComments[c.key].push({ id: comment.key, ...comment.val() });
-                    });
-                });
-                if (currentPrayerId) renderPrayerComments(currentPrayerId);
-                renderPrayers(); // 댓글 수 업데이트
-            });
-
-            // 감사제목 댓글
-            db.ref('thanksComments').on('value', function(snap) {
-                thanksComments = {};
-                snap.forEach(function(c) {
-                    thanksComments[c.key] = [];
-                    c.forEach(function(comment) {
-                        thanksComments[c.key].push({ id: comment.key, ...comment.val() });
-                    });
-                });
-                if (currentThanksId) renderThanksComments(currentThanksId);
-                renderThanks(); // 댓글 수 업데이트
             });
 
             // 일정
@@ -2159,35 +1456,6 @@
                 console.log('말씀 로드:', Object.keys(dailyVerses).length + '개');
                 displayTodayVerse();
             });
-
-            // 관리자 비밀번호
-            db.ref('settings/adminPassword').on('value', function(snap) {
-                adminPassword = snap.val();
-                console.log('관리자 비밀번호:', adminPassword ? '설정됨' : '미설정');
-                if (!adminPassword) {
-                    // 첫 사용 시 기본 비밀번호 설정 안내
-                    console.log('관리자 비밀번호를 설정해주세요');
-                }
-            });
-
-            // 관리자 인증 설정
-            db.ref('settings/adminAuth').on('value', function(snap) {
-                var saved = snap.val();
-                if (saved) {
-                    adminSettings = {
-                        notice: saved.notice !== false,
-                        schedule: saved.schedule !== false,
-                        prayer: saved.prayer === true,
-                        thanks: saved.thanks === true,
-                        department: saved.department !== false,
-                        deptPost: saved.deptPost !== false,
-                        links: saved.links !== false,
-                        verse: saved.verse !== false
-                    };
-                }
-                console.log('관리자 인증 설정 로드:', adminSettings);
-                updateAuthSettingsUI();
-            });
         }
 
         // ========== 유틸리티 ==========
@@ -2218,237 +1486,6 @@
             if (!str) return '';
             var d = new Date(str);
             return (d.getMonth()+1) + '/' + d.getDate();
-        }
-
-        // ========== 관리자 기능 ==========
-        var pendingAdminAction = null;
-
-        function openSettingsModal() {
-            updateAdminStatusDisplay();
-            openModal('settingsModal');
-        }
-
-        function updateAdminStatusDisplay() {
-            var statusText = document.getElementById('adminStatusText');
-            var toggleBtn = document.getElementById('adminToggleBtn');
-            var badge = document.getElementById('adminBadge');
-            var passwordSection = document.getElementById('adminPasswordSection');
-            var restoreSection = document.getElementById('restoreSection');
-            var authSection = document.getElementById('adminAuthSection');
-
-            if (isAdminMode) {
-                statusText.textContent = '✅ 활성화됨';
-                statusText.style.color = 'var(--success)';
-                toggleBtn.textContent = '로그아웃';
-                toggleBtn.style.background = 'var(--danger)';
-                badge.style.display = 'inline-block';
-                passwordSection.style.display = 'block';
-                restoreSection.style.display = 'block';
-                authSection.style.display = 'block';
-                updateAuthSettingsUI();
-            } else {
-                statusText.textContent = '비활성화';
-                statusText.style.color = 'var(--text-secondary)';
-                toggleBtn.textContent = '로그인';
-                toggleBtn.style.background = 'var(--primary)';
-                badge.style.display = 'none';
-                passwordSection.style.display = 'none';
-                restoreSection.style.display = 'none';
-                authSection.style.display = 'none';
-            }
-        }
-
-        function toggleAdminMode() {
-            if (isAdminMode) {
-                // 로그아웃
-                isAdminMode = false;
-                updateAdminStatusDisplay();
-                showToast('관리자 모드가 해제되었습니다');
-            } else {
-                // 로그인 시도
-                if (!adminPassword) {
-                    // 비밀번호가 설정되지 않은 경우 - 첫 설정
-                    var newPw = prompt('관리자 비밀번호를 처음 설정합니다.\n4자리 이상 비밀번호를 입력하세요:');
-                    if (newPw && newPw.length >= 4) {
-                        db.ref('settings/adminPassword').set(newPw).then(function() {
-                            adminPassword = newPw;
-                            isAdminMode = true;
-                            updateAdminStatusDisplay();
-                            showToast('관리자 비밀번호가 설정되었습니다');
-                        });
-                    } else if (newPw) {
-                        showToast('비밀번호는 4자리 이상이어야 합니다');
-                    }
-                } else {
-                    // 비밀번호 입력 모달 열기
-                    document.getElementById('adminPasswordInput').value = '';
-                    document.getElementById('adminPasswordError').classList.remove('show');
-                    pendingAdminAction = 'login';
-                    openModal('adminAuthModal');
-                }
-            }
-        }
-
-        function verifyAdminPassword() {
-            var input = document.getElementById('adminPasswordInput').value;
-            
-            if (input === adminPassword) {
-                closeModal('adminAuthModal');
-                
-                if (pendingAdminAction === 'login') {
-                    isAdminMode = true;
-                    updateAdminStatusDisplay();
-                    showToast('관리자 모드가 활성화되었습니다');
-                } else if (pendingAdminAction && typeof pendingAdminAction === 'function') {
-                    pendingAdminAction();
-                }
-                pendingAdminAction = null;
-            } else {
-                document.getElementById('adminPasswordError').classList.add('show');
-                document.getElementById('adminPasswordInput').value = '';
-            }
-        }
-
-        function requireAdmin(action, feature) {
-            // feature가 지정되지 않았거나 해당 기능이 인증 필요로 설정된 경우
-            var needsAuth = !feature || adminSettings[feature] === true;
-            
-            if (!needsAuth) {
-                // 인증 불필요
-                action();
-            } else if (isAdminMode) {
-                // 이미 관리자 모드
-                action();
-            } else if (!adminPassword) {
-                // 비밀번호 미설정 시 자유 접근 (첫 사용)
-                action();
-            } else {
-                // 인증 필요
-                pendingAdminAction = action;
-                document.getElementById('adminPasswordInput').value = '';
-                document.getElementById('adminPasswordError').classList.remove('show');
-                openModal('adminAuthModal');
-            }
-        }
-
-        function updateAuthSettingsUI() {
-            var checkboxes = {
-                'authNotice': adminSettings.notice,
-                'authSchedule': adminSettings.schedule,
-                'authPrayer': adminSettings.prayer,
-                'authThanks': adminSettings.thanks,
-                'authDepartment': adminSettings.department,
-                'authDeptPost': adminSettings.deptPost,
-                'authLinks': adminSettings.links,
-                'authVerse': adminSettings.verse
-            };
-            
-            for (var id in checkboxes) {
-                var el = document.getElementById(id);
-                if (el) el.checked = checkboxes[id];
-            }
-        }
-
-        function saveAdminSettings() {
-            if (!db) return;
-            
-            var newSettings = {
-                notice: document.getElementById('authNotice').checked,
-                schedule: document.getElementById('authSchedule').checked,
-                prayer: document.getElementById('authPrayer').checked,
-                thanks: document.getElementById('authThanks').checked,
-                department: document.getElementById('authDepartment').checked,
-                deptPost: document.getElementById('authDeptPost').checked,
-                links: document.getElementById('authLinks').checked,
-                verse: document.getElementById('authVerse').checked
-            };
-            
-            db.ref('settings/adminAuth').set(newSettings).then(function() {
-                adminSettings = newSettings;
-                showToast('설정이 저장되었습니다');
-            });
-        }
-
-        function changeAdminPassword() {
-            var newPw = document.getElementById('newAdminPassword').value.trim();
-            if (newPw.length < 4) {
-                showToast('비밀번호는 4자리 이상이어야 합니다');
-                return;
-            }
-            
-            db.ref('settings/adminPassword').set(newPw).then(function() {
-                adminPassword = newPw;
-                document.getElementById('newAdminPassword').value = '';
-                showToast('비밀번호가 변경되었습니다');
-            });
-        }
-
-        // ========== 백업/복원 ==========
-        function backupData() {
-            if (!db) { showToast('연결 실패'); return; }
-            
-            db.ref().once('value').then(function(snap) {
-                var data = snap.val();
-                var backup = {
-                    exportDate: new Date().toISOString(),
-                    appVersion: 'v10',
-                    data: data
-                };
-                
-                var blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-                var url = URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = 'church-backup-' + new Date().toISOString().split('T')[0] + '.json';
-                a.click();
-                URL.revokeObjectURL(url);
-                
-                showToast('백업 파일이 다운로드되었습니다');
-            });
-        }
-
-        function restoreData(input) {
-            var file = input.files[0];
-            if (!file) return;
-
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    var backup = JSON.parse(e.target.result);
-                    
-                    if (!backup.data) {
-                        showToast('올바른 백업 파일이 아닙니다');
-                        return;
-                    }
-
-                    if (!confirm('기존 데이터가 모두 덮어씌워집니다.\n정말 복원하시겠습니까?')) {
-                        return;
-                    }
-
-                    db.ref().set(backup.data).then(function() {
-                        showToast('데이터가 복원되었습니다');
-                        closeModal('settingsModal');
-                    }).catch(function(err) {
-                        showToast('복원 실패: ' + err.message);
-                    });
-                } catch (err) {
-                    showToast('파일 읽기 실패');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        function showSecurityGuide() {
-            openModal('securityGuideModal');
-        }
-
-        function copySecurityRules() {
-            var rules = '{\n  "rules": {\n    ".read": true,\n    ".write": true,\n    "settings": {\n      ".write": true\n    }\n  }\n}';
-            navigator.clipboard.writeText(rules).then(function() {
-                showToast('규칙이 복사되었습니다');
-            }).catch(function() {
-                showToast('복사 실패 - 직접 복사해주세요');
-            });
         }
 
         function formatDateTime(str) {
@@ -2583,22 +1620,20 @@
                 return;
             }
 
-            // Firebase에 저장 (관리자 인증 필요)
-            requireAdmin(function() {
-                if (!db) {
-                    showToast('데이터베이스 연결 실패');
-                    return;
-                }
+            // Firebase에 저장
+            if (!db) {
+                showToast('데이터베이스 연결 실패');
+                return;
+            }
 
-                db.ref('dailyVerses').set(parsedVerses).then(function() {
-                    showToast(count + '개 말씀이 저장되었습니다!');
-                    document.getElementById('verseTextArea').value = '';
-                    closeModal('verseModal');
-                }).catch(function(e) {
-                    console.error('저장 실패:', e);
-                    showToast('저장 실패');
-                });
-            }, 'verse');
+            db.ref('dailyVerses').set(parsedVerses).then(function() {
+                showToast(count + '개 말씀이 저장되었습니다!');
+                document.getElementById('verseTextArea').value = '';
+                closeModal('verseModal');
+            }).catch(function(e) {
+                console.error('저장 실패:', e);
+                showToast('저장 실패');
+            });
         }
 
         function renderVerseInputs() {
@@ -2618,30 +1653,28 @@
         }
 
         function saveAllVerses() {
-            requireAdmin(function() {
-                if (!db) { showToast('연결 실패'); return; }
+            if (!db) { showToast('연결 실패'); return; }
+            
+            var versesToSave = {};
+            var count = 0;
+            
+            for (var day = 1; day <= 31; day++) {
+                var text = document.getElementById('verseText' + day).value.trim();
+                var reference = document.getElementById('verseRef' + day).value.trim();
                 
-                var versesToSave = {};
-                var count = 0;
-                
-                for (var day = 1; day <= 31; day++) {
-                    var text = document.getElementById('verseText' + day).value.trim();
-                    var reference = document.getElementById('verseRef' + day).value.trim();
-                    
-                    if (text) {
-                        versesToSave[day] = { text: text, reference: reference };
-                        count++;
-                    }
+                if (text) {
+                    versesToSave[day] = { text: text, reference: reference };
+                    count++;
                 }
-                
-                db.ref('dailyVerses').set(versesToSave).then(function() {
-                    showToast(count + '개 말씀이 저장되었습니다');
-                    closeModal('verseModal');
-                }).catch(function(e) {
-                    console.error('저장 실패:', e);
-                    showToast('저장 실패');
-                });
-            }, 'verse');
+            }
+            
+            db.ref('dailyVerses').set(versesToSave).then(function() {
+                showToast(count + '개 말씀이 저장되었습니다');
+                closeModal('verseModal');
+            }).catch(function(e) {
+                console.error('저장 실패:', e);
+                showToast('저장 실패');
+            });
         }
 
         function clearAllVerses() {
@@ -2725,18 +1758,10 @@
 
         // ========== 즐겨찾기 ==========
         function renderQuickLinks() {
-            // order 기준 정렬
-            var sortedLinks = links.slice().sort(function(a, b) {
-                return (a.order || 0) - (b.order || 0);
-            });
-            var html = sortedLinks.map(function(l) {
-                return '<a href="' + l.url + '" target="_blank" class="quick-link"><span class="link-icon">' + (l.icon || '🔗') + '</span><span class="link-text">' + l.name + '</span></a>';
+            var html = links.map(function(l) {
+                return '<a href="' + l.url + '" target="_blank" class="quick-link" style="position:relative;"><span class="link-icon">' + (l.icon || '🔗') + '</span><span class="link-text">' + l.name + '</span><button class="link-edit-btn" onclick="event.preventDefault();event.stopPropagation();editLink(\'' + l.id + '\')">✏️</button></a>';
             }).join('');
-            
-            if (sortedLinks.length === 0) {
-                html = '<p style="color:var(--text-light); text-align:center; padding:20px;">즐겨찾기가 없습니다. 관리에서 추가하세요.</p>';
-            }
-            
+            html += '<div class="quick-link add-link-btn" onclick="openLinkModal()"><span class="link-icon">➕</span><span class="link-text">추가</span></div>';
             document.getElementById('quickLinks').innerHTML = html;
         }
 
@@ -2765,149 +1790,54 @@
         }
 
         function saveLink() {
-            requireAdmin(function() {
-                if (!db) { showToast('연결 실패'); return; }
-                var id = document.getElementById('linkEditId').value;
-                var name = document.getElementById('linkName').value.trim();
-                var url = document.getElementById('linkUrl').value.trim();
-                if (!name || !url) { showToast('이름과 URL을 입력해주세요'); return; }
+            if (!db) { showToast('연결 실패'); return; }
+            var id = document.getElementById('linkEditId').value;
+            var name = document.getElementById('linkName').value.trim();
+            var url = document.getElementById('linkUrl').value.trim();
+            if (!name || !url) { showToast('이름과 URL을 입력해주세요'); return; }
 
-                var data = { name: name, url: url, icon: selectedIcon };
-                if (id) {
-                    db.ref('links/' + id).update(data).then(function() {
-                        closeModal('linkModal');
-                        showToast('저장되었습니다');
-                    });
-                } else {
-                    // 새 링크는 마지막 순서로 추가
-                    var maxOrder = links.reduce(function(max, l) {
-                        return Math.max(max, l.order || 0);
-                    }, 0);
-                    data.order = maxOrder + 1;
-                    db.ref('links').push(data).then(function() {
-                        closeModal('linkModal');
-                        showToast('저장되었습니다');
-                    });
-                }
-            }, 'links');
+            var data = { name: name, url: url, icon: selectedIcon };
+            if (id) {
+                db.ref('links/' + id).update(data).then(function() {
+                    closeModal('linkModal');
+                    showToast('저장되었습니다');
+                });
+            } else {
+                db.ref('links').push(data).then(function() {
+                    closeModal('linkModal');
+                    showToast('저장되었습니다');
+                });
+            }
         }
 
         function deleteLink() {
-            requireAdmin(function() {
-                if (!db) return;
-                var id = document.getElementById('linkEditId').value;
-                if (!confirm('삭제하시겠습니까?')) return;
-                db.ref('links/' + id).remove().then(function() {
-                    closeModal('linkModal');
-                    showToast('삭제되었습니다');
-                });
-            }, 'links');
-        }
-
-        var linkSortable = null;
-
-        function openLinkManageModal() {
-            renderLinkOrderList();
-            openModal('linkOrderModal');
-        }
-
-        function renderLinkOrderList() {
-            var container = document.getElementById('linkOrderList');
-            // order 기준 정렬
-            var sortedLinks = links.slice().sort(function(a, b) {
-                return (a.order || 0) - (b.order || 0);
+            if (!db) return;
+            var id = document.getElementById('linkEditId').value;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('links/' + id).remove().then(function() {
+                closeModal('linkModal');
+                showToast('삭제되었습니다');
             });
-
-            if (sortedLinks.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:var(--text-light);">즐겨찾기가 없습니다</p>';
-                return;
-            }
-
-            var html = sortedLinks.map(function(l) {
-                return '<div class="link-order-item" data-id="' + l.id + '">' +
-                    '<span class="drag-handle">☰</span>' +
-                    '<span class="link-icon">' + (l.icon || '🔗') + '</span>' +
-                    '<span class="link-name">' + l.name + '</span>' +
-                    '<div class="link-manage-btns">' +
-                    '<button class="link-edit-btn" onclick="editLinkFromManage(\'' + l.id + '\')">✏️</button>' +
-                    '<button class="link-delete-btn" onclick="deleteLinkDirect(\'' + l.id + '\')">🗑️</button>' +
-                    '</div></div>';
-            }).join('');
-
-            container.innerHTML = html;
-
-            // SortableJS 초기화
-            if (linkSortable) {
-                linkSortable.destroy();
-            }
-
-            linkSortable = new Sortable(container, {
-                animation: 150,
-                handle: '.drag-handle',
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                onEnd: function(evt) {
-                    saveLinkOrder();
-                }
-            });
-        }
-
-        function editLinkFromManage(id) {
-            closeModal('linkOrderModal');
-            editLink(id);
-        }
-
-        function deleteLinkDirect(id) {
-            requireAdmin(function() {
-                if (!db) return;
-                var link = links.find(function(l) { return l.id === id; });
-                if (!confirm('"' + (link ? link.name : '') + '" 을(를) 삭제하시겠습니까?')) return;
-                db.ref('links/' + id).remove().then(function() {
-                    showToast('삭제되었습니다');
-                    renderLinkOrderList();
-                });
-            }, 'links');
-        }
-
-        function saveLinkOrder() {
-            requireAdmin(function() {
-                if (!db) return;
-
-                var container = document.getElementById('linkOrderList');
-                var items = container.querySelectorAll('.link-order-item');
-                var updates = {};
-
-                items.forEach(function(item, index) {
-                    var id = item.getAttribute('data-id');
-                    updates['links/' + id + '/order'] = index;
-                });
-
-                db.ref().update(updates).then(function() {
-                    showToast('순서가 저장되었습니다');
-                });
-            }, 'links');
         }
 
         // ========== 공지사항 ==========
         function addNotice() {
-            requireAdmin(function() {
-                if (!db) { showToast('연결 실패'); return; }
-                var title = document.getElementById('noticeTitle').value.trim();
-                var content = document.getElementById('noticeContent').value.trim();
-                var important = document.getElementById('noticeImportant').checked;
-                if (!title || !content) { showToast('제목과 내용을 입력해주세요'); return; }
+            if (!db) { showToast('연결 실패'); return; }
+            var title = document.getElementById('noticeTitle').value.trim();
+            var content = document.getElementById('noticeContent').value.trim();
+            var important = document.getElementById('noticeImportant').checked;
+            if (!title || !content) { showToast('제목과 내용을 입력해주세요'); return; }
 
-                db.ref('notices').push({
-                    title: title, content: content, important: important,
-                    date: new Date().toISOString()
-                }).then(function() {
-                    document.getElementById('noticeTitle').value = '';
-                    document.getElementById('noticeContent').value = '';
-                    document.getElementById('noticeImportant').checked = false;
-                    document.getElementById('noticeAdminPanel').classList.remove('show');
-                    showToast('공지가 등록되었습니다');
-                });
-            }, 'notice');
+            db.ref('notices').push({
+                title: title, content: content, important: important,
+                date: new Date().toISOString()
+            }).then(function() {
+                document.getElementById('noticeTitle').value = '';
+                document.getElementById('noticeContent').value = '';
+                document.getElementById('noticeImportant').checked = false;
+                document.getElementById('noticeAdminPanel').classList.remove('show');
+                showToast('공지가 등록되었습니다');
+            });
         }
 
         function renderNotices() {
@@ -2945,13 +1875,11 @@
         }
 
         function deleteNotice(id) {
-            requireAdmin(function() {
-                if (!db) return;
-                if (!confirm('삭제하시겠습니까?')) return;
-                db.ref('notices/' + id).remove();
-                db.ref('comments/' + id).remove();
-                showToast('삭제되었습니다');
-            }, 'notice');
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('notices/' + id).remove();
+            db.ref('comments/' + id).remove();
+            showToast('삭제되었습니다');
         }
 
         // ========== 댓글 ==========
@@ -3047,180 +1975,14 @@
                 return;
             }
             container.innerHTML = filtered.map(function(p) {
-                var commentCount = (prayerComments[p.id] || []).length;
-                var commentBadge = commentCount > 0 ? '<span class="comment-count-badge">💬 ' + commentCount + '</span>' : '';
-                return '<div class="prayer-item" onclick="openPrayerDetail(\'' + p.id + '\')"><div class="prayer-actions"><button onclick="event.stopPropagation();openPrayerModal(\'' + p.id + '\')">✏️</button><button onclick="event.stopPropagation();deletePrayer(\'' + p.id + '\')">🗑️</button></div><p class="prayer-author">' + p.author + commentBadge + '</p><p class="prayer-content">' + (p.content.length > 100 ? p.content.substring(0,100) + '...' : p.content) + '</p><p class="prayer-date">' + formatDate(p.date) + '</p></div>';
+                return '<div class="prayer-item"><div class="prayer-actions"><button onclick="openPrayerModal(\'' + p.id + '\')">✏️</button><button onclick="deletePrayer(\'' + p.id + '\')">🗑️</button></div><p class="prayer-author">' + p.author + '</p><p class="prayer-content">' + p.content + '</p><p class="prayer-date">' + formatDate(p.date) + '</p></div>';
             }).join('');
-        }
-
-        function openPrayerDetail(id) {
-            var p = prayers.find(function(x) { return x.id === id; });
-            if (!p) return;
-            currentPrayerId = id;
-            document.getElementById('prayerDetailAuthor').textContent = '👤 ' + p.author;
-            document.getElementById('prayerDetailContent').textContent = p.content;
-            document.getElementById('prayerDetailDate').textContent = formatDateTime(p.date);
-            renderPrayerComments(id);
-            openModal('prayerDetailModal');
-        }
-
-        function renderPrayerComments(prayerId) {
-            var container = document.getElementById('prayerComments');
-            var list = prayerComments[prayerId] || [];
-            document.getElementById('prayerCommentCount').textContent = list.length > 0 ? '(' + list.length + ')' : '';
-
-            if (list.length === 0) {
-                container.innerHTML = '<p style="color:var(--text-light)">첫 댓글을 남겨보세요!</p>';
-                return;
-            }
-            container.innerHTML = list.map(function(c) {
-                return '<div class="comment-item"><button class="comment-delete" onclick="deletePrayerComment(\'' + prayerId + '\',\'' + c.id + '\')">×</button><div class="comment-header"><span class="comment-author">' + c.author + '</span><span class="comment-date">' + formatDateTime(c.date) + '</span></div><p class="comment-content">' + c.content + '</p></div>';
-            }).join('');
-        }
-
-        function addPrayerComment() {
-            if (!db || !currentPrayerId) return;
-            var author = document.getElementById('prayerCommentAuthor').value.trim() || '익명';
-            var content = document.getElementById('prayerCommentContent').value.trim();
-            if (!content) { showToast('댓글을 입력해주세요'); return; }
-
-            db.ref('prayerComments/' + currentPrayerId).push({
-                author: author, content: content, date: new Date().toISOString()
-            }).then(function() {
-                document.getElementById('prayerCommentAuthor').value = '';
-                document.getElementById('prayerCommentContent').value = '';
-                showToast('댓글이 등록되었습니다');
-            });
-        }
-
-        function deletePrayerComment(prayerId, commentId) {
-            if (!db) return;
-            if (!confirm('삭제하시겠습니까?')) return;
-            db.ref('prayerComments/' + prayerId + '/' + commentId).remove();
         }
 
         function deletePrayer(id) {
             if (!db) return;
             if (!confirm('삭제하시겠습니까?')) return;
             db.ref('prayers/' + id).remove();
-            db.ref('prayerComments/' + id).remove();
-            showToast('삭제되었습니다');
-        }
-
-        // ========== 감사제목 ==========
-        function updateThanksMonth() {
-            var m = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-            document.getElementById('currentThanksMonth').textContent = currentThanksMonth.getFullYear() + '년 ' + m[currentThanksMonth.getMonth()];
-        }
-
-        function changeThanksMonth(d) {
-            currentThanksMonth.setMonth(currentThanksMonth.getMonth() + d);
-            renderThanks();
-        }
-
-        function openThanksModal(editId) {
-            document.getElementById('thanksEditId').value = '';
-            document.getElementById('thanksAuthor').value = '';
-            document.getElementById('thanksContent').value = '';
-            document.getElementById('thanksModalTitle').textContent = '감사제목 올리기';
-
-            if (editId) {
-                var t = thanks.find(function(x) { return x.id === editId; });
-                if (t) {
-                    document.getElementById('thanksEditId').value = editId;
-                    document.getElementById('thanksAuthor').value = t.author;
-                    document.getElementById('thanksContent').value = t.content;
-                    document.getElementById('thanksModalTitle').textContent = '감사제목 수정';
-                }
-            }
-            openModal('thanksModal');
-        }
-
-        function saveThanks() {
-            if (!db) { showToast('연결 실패'); return; }
-            var editId = document.getElementById('thanksEditId').value;
-            var author = document.getElementById('thanksAuthor').value.trim() || '익명';
-            var content = document.getElementById('thanksContent').value.trim();
-            if (!content) { showToast('감사제목을 입력해주세요'); return; }
-
-            var monthKey = currentThanksMonth.getFullYear() + '-' + String(currentThanksMonth.getMonth()+1).padStart(2,'0');
-            var data = { author: author, content: content, date: new Date().toISOString(), month: monthKey };
-
-            var promise = editId ? db.ref('thanks/' + editId).update(data) : db.ref('thanks').push(data);
-            promise.then(function() {
-                closeModal('thanksModal');
-                showToast(editId ? '수정되었습니다' : '등록되었습니다');
-            });
-        }
-
-        function renderThanks() {
-            updateThanksMonth();
-            var container = document.getElementById('thanksList');
-            var monthKey = currentThanksMonth.getFullYear() + '-' + String(currentThanksMonth.getMonth()+1).padStart(2,'0');
-            var filtered = thanks.filter(function(t) { return t.month === monthKey; });
-
-            if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="icon">💝</div><p>이번 달 감사제목이 없습니다</p></div>';
-                return;
-            }
-            container.innerHTML = filtered.map(function(t) {
-                var commentCount = (thanksComments[t.id] || []).length;
-                var commentBadge = commentCount > 0 ? '<span class="comment-count-badge">💬 ' + commentCount + '</span>' : '';
-                return '<div class="thanks-item" onclick="openThanksDetail(\'' + t.id + '\')"><div class="thanks-actions"><button onclick="event.stopPropagation();openThanksModal(\'' + t.id + '\')">✏️</button><button onclick="event.stopPropagation();deleteThanks(\'' + t.id + '\')">🗑️</button></div><p class="thanks-author">' + t.author + commentBadge + '</p><p class="thanks-content">' + (t.content.length > 100 ? t.content.substring(0,100) + '...' : t.content) + '</p><p class="thanks-date">' + formatDate(t.date) + '</p></div>';
-            }).join('');
-        }
-
-        function openThanksDetail(id) {
-            var t = thanks.find(function(x) { return x.id === id; });
-            if (!t) return;
-            currentThanksId = id;
-            document.getElementById('thanksDetailAuthor').textContent = '👤 ' + t.author;
-            document.getElementById('thanksDetailContent').textContent = t.content;
-            document.getElementById('thanksDetailDate').textContent = formatDateTime(t.date);
-            renderThanksComments(id);
-            openModal('thanksDetailModal');
-        }
-
-        function renderThanksComments(thanksId) {
-            var container = document.getElementById('thanksComments');
-            var list = thanksComments[thanksId] || [];
-            document.getElementById('thanksCommentCount').textContent = list.length > 0 ? '(' + list.length + ')' : '';
-
-            if (list.length === 0) {
-                container.innerHTML = '<p style="color:var(--text-light)">첫 댓글을 남겨보세요!</p>';
-                return;
-            }
-            container.innerHTML = list.map(function(c) {
-                return '<div class="comment-item"><button class="comment-delete" onclick="deleteThanksComment(\'' + thanksId + '\',\'' + c.id + '\')">×</button><div class="comment-header"><span class="comment-author">' + c.author + '</span><span class="comment-date">' + formatDateTime(c.date) + '</span></div><p class="comment-content">' + c.content + '</p></div>';
-            }).join('');
-        }
-
-        function addThanksComment() {
-            if (!db || !currentThanksId) return;
-            var author = document.getElementById('thanksCommentAuthor').value.trim() || '익명';
-            var content = document.getElementById('thanksCommentContent').value.trim();
-            if (!content) { showToast('댓글을 입력해주세요'); return; }
-
-            db.ref('thanksComments/' + currentThanksId).push({
-                author: author, content: content, date: new Date().toISOString()
-            }).then(function() {
-                document.getElementById('thanksCommentAuthor').value = '';
-                document.getElementById('thanksCommentContent').value = '';
-                showToast('댓글이 등록되었습니다');
-            });
-        }
-
-        function deleteThanksComment(thanksId, commentId) {
-            if (!db) return;
-            if (!confirm('삭제하시겠습니까?')) return;
-            db.ref('thanksComments/' + thanksId + '/' + commentId).remove();
-        }
-
-        function deleteThanks(id) {
-            if (!db) return;
-            if (!confirm('삭제하시겠습니까?')) return;
-            db.ref('thanks/' + id).remove();
-            db.ref('thanksComments/' + id).remove();
             showToast('삭제되었습니다');
         }
 
@@ -3276,25 +2038,23 @@
         }
 
         function saveQuickSchedule() {
-            requireAdmin(function() {
-                if (!db) { showToast('연결 실패'); return; }
-                if (!selectedDate) { showToast('날짜를 선택해주세요'); return; }
-                var title = document.getElementById('quickScheduleInput').value.trim();
-                var time = document.getElementById('quickScheduleTime').value.trim();
-                if (!title) { showToast('일정 제목을 입력해주세요'); return; }
+            if (!db) { showToast('연결 실패'); return; }
+            if (!selectedDate) { showToast('날짜를 선택해주세요'); return; }
+            var title = document.getElementById('quickScheduleInput').value.trim();
+            var time = document.getElementById('quickScheduleTime').value.trim();
+            if (!title) { showToast('일정 제목을 입력해주세요'); return; }
 
-                console.log('일정 저장:', { date: selectedDate, title: title, time: time });
-                db.ref('schedules').push({
-                    date: selectedDate, title: title, time: time || ''
-                }).then(function() {
-                    console.log('저장 성공');
-                    closeModal('quickScheduleModal');
-                    showToast('일정이 등록되었습니다');
-                }).catch(function(e) {
-                    console.error('저장 실패:', e);
-                    showToast('등록 실패');
-                });
-            }, 'schedule');
+            console.log('일정 저장:', { date: selectedDate, title: title, time: time });
+            db.ref('schedules').push({
+                date: selectedDate, title: title, time: time || ''
+            }).then(function() {
+                console.log('저장 성공');
+                closeModal('quickScheduleModal');
+                showToast('일정이 등록되었습니다');
+            }).catch(function(e) {
+                console.error('저장 실패:', e);
+                showToast('등록 실패');
+            });
         }
 
         function renderCalendar() {
@@ -3368,13 +2128,11 @@
         }
 
         function deleteSchedule(id) {
-            requireAdmin(function() {
-                if (!db) return;
-                if (!confirm('삭제하시겠습니까?')) return;
-                db.ref('schedules/' + id).remove().then(function() {
-                    showToast('삭제되었습니다');
-                });
-            }, 'schedule');
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('schedules/' + id).remove().then(function() {
+                showToast('삭제되었습니다');
+            });
         }
 
         // ========== 부서 ==========
@@ -3442,45 +2200,41 @@
         }
 
         function saveDept() {
-            requireAdmin(function() {
-                if (!db) { showToast('연결 실패'); return; }
-                var id = document.getElementById('deptEditId').value;
-                var name = document.getElementById('deptName').value.trim();
-                if (!name) { showToast('부서 이름을 입력해주세요'); return; }
+            if (!db) { showToast('연결 실패'); return; }
+            var id = document.getElementById('deptEditId').value;
+            var name = document.getElementById('deptName').value.trim();
+            if (!name) { showToast('부서 이름을 입력해주세요'); return; }
 
-                console.log('부서 저장:', { id: id, name: name, icon: selectedDeptIcon });
+            console.log('부서 저장:', { id: id, name: name, icon: selectedDeptIcon });
 
-                if (id) {
-                    db.ref('departments/' + id).update({ name: name, icon: selectedDeptIcon }).then(function() {
-                        console.log('부서 수정 성공');
-                        closeModal('deptModal');
-                        showToast('저장되었습니다');
-                    }).catch(function(e) {
-                        console.error('부서 수정 실패:', e);
-                        showToast('저장 실패');
-                    });
-                } else {
-                    db.ref('departments').push({ name: name, icon: selectedDeptIcon, order: departments.length + 1 }).then(function() {
-                        console.log('부서 추가 성공');
-                        closeModal('deptModal');
-                        showToast('저장되었습니다');
-                    }).catch(function(e) {
-                        console.error('부서 추가 실패:', e);
-                        showToast('저장 실패');
-                    });
-                }
-            }, 'department');
+            if (id) {
+                db.ref('departments/' + id).update({ name: name, icon: selectedDeptIcon }).then(function() {
+                    console.log('부서 수정 성공');
+                    closeModal('deptModal');
+                    showToast('저장되었습니다');
+                }).catch(function(e) {
+                    console.error('부서 수정 실패:', e);
+                    showToast('저장 실패');
+                });
+            } else {
+                db.ref('departments').push({ name: name, icon: selectedDeptIcon, order: departments.length + 1 }).then(function() {
+                    console.log('부서 추가 성공');
+                    closeModal('deptModal');
+                    showToast('저장되었습니다');
+                }).catch(function(e) {
+                    console.error('부서 추가 실패:', e);
+                    showToast('저장 실패');
+                });
+            }
         }
 
         function deleteDept(id) {
-            requireAdmin(function() {
-                if (!db) return;
-                if (!confirm('이 부서를 삭제하시겠습니까?')) return;
-                db.ref('departments/' + id).remove();
-                db.ref('deptPosts/' + id).remove();
-                renderDeptManageList();
-                showToast('삭제되었습니다');
-            }, 'department');
+            if (!db) return;
+            if (!confirm('이 부서를 삭제하시겠습니까?')) return;
+            db.ref('departments/' + id).remove();
+            db.ref('deptPosts/' + id).remove();
+            renderDeptManageList();
+            showToast('삭제되었습니다');
         }
 
         function togglePasswordField() {
@@ -3545,115 +2299,36 @@
         }
 
         function addDeptPost() {
-            requireAdmin(function() {
-                if (!db) { showToast('연결 실패'); return; }
-                var deptId = document.getElementById('deptPostDept').value;
-                if (!deptId) { showToast('부서를 먼저 추가해주세요'); return; }
-                var title = document.getElementById('deptPostTitle').value.trim();
-                var content = document.getElementById('deptPostContent').value.trim();
-                var locked = document.getElementById('deptPostLocked').checked;
-                var password = document.getElementById('deptPostPassword').value.trim();
-                if (!title || !content) { showToast('제목과 내용을 입력해주세요'); return; }
-                if (locked && !password) { showToast('비밀번호를 입력해주세요'); return; }
+            if (!db) { showToast('연결 실패'); return; }
+            var deptId = document.getElementById('deptPostDept').value;
+            if (!deptId) { showToast('부서를 먼저 추가해주세요'); return; }
+            var title = document.getElementById('deptPostTitle').value.trim();
+            var content = document.getElementById('deptPostContent').value.trim();
+            var locked = document.getElementById('deptPostLocked').checked;
+            var password = document.getElementById('deptPostPassword').value.trim();
+            if (!title || !content) { showToast('제목과 내용을 입력해주세요'); return; }
+            if (locked && !password) { showToast('비밀번호를 입력해주세요'); return; }
 
-                db.ref('deptPosts/' + deptId).push({
-                    title: title, content: content, date: new Date().toISOString(),
-                    locked: locked, password: locked ? password : null
-                }).then(function() {
-                    document.getElementById('deptPostTitle').value = '';
-                    document.getElementById('deptPostContent').value = '';
-                    document.getElementById('deptPostLocked').checked = false;
-                    document.getElementById('deptPostPassword').value = '';
-                    document.getElementById('passwordField').classList.remove('active');
-                    document.getElementById('deptAdminPanel').classList.remove('show');
-                    showToast('게시글이 등록되었습니다');
-                });
-            }, 'deptPost');
+            db.ref('deptPosts/' + deptId).push({
+                title: title, content: content, date: new Date().toISOString(),
+                locked: locked, password: locked ? password : null
+            }).then(function() {
+                document.getElementById('deptPostTitle').value = '';
+                document.getElementById('deptPostContent').value = '';
+                document.getElementById('deptPostLocked').checked = false;
+                document.getElementById('deptPostPassword').value = '';
+                document.getElementById('passwordField').classList.remove('active');
+                document.getElementById('deptAdminPanel').classList.remove('show');
+                showToast('게시글이 등록되었습니다');
+            });
         }
 
         function deleteDeptPost(deptId, postId) {
-            requireAdmin(function() {
-                if (!db) return;
-                if (!confirm('삭제하시겠습니까?')) return;
-                db.ref('deptPosts/' + deptId + '/' + postId).remove();
-                showToast('삭제되었습니다');
-            }, 'deptPost');
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('deptPosts/' + deptId + '/' + postId).remove();
+            showToast('삭제되었습니다');
         }
     </script>
-<!-- ⭐ 여기에 추가 시작 ⭐ -->
-    <script>
-    // ========== PWA 기능 ==========
-    var deferredPrompt;
-
-    // Service Worker 등록
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/SSBC/sw.js')
-                .then(function(registration) {
-                    console.log('ServiceWorker 등록 성공:', registration.scope);
-                })
-                .catch(function(err) {
-                    console.log('ServiceWorker 등록 실패:', err);
-                });
-        });
-    }
-
-    // 설치 프롬프트 처리
-    window.addEventListener('beforeinstallprompt', function(e) {
-        e.preventDefault();
-        deferredPrompt = e;
-        
-        // 설치 배너 표시 (이미 설치된 경우 제외)
-        if (!localStorage.getItem('installBannerDismissed')) {
-            setTimeout(function() {
-                document.getElementById('installBanner').classList.add('show');
-            }, 3000); // 3초 후 표시
-        }
-    });
-
-    // 앱 설치 함수
-    function installApp() {
-        if (!deferredPrompt) {
-            showToast('이미 설치되었거나 설치할 수 없습니다');
-            return;
-        }
-        
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(function(choiceResult) {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('사용자가 앱 설치를 수락했습니다');
-                showToast('앱이 설치되었습니다! 홈 화면에서 확인하세요');
-            } else {
-                console.log('사용자가 앱 설치를 거부했습니다');
-            }
-            deferredPrompt = null;
-            hideInstallBanner();
-        });
-    }
-
-    // 설치 배너 숨기기
-    function hideInstallBanner() {
-        document.getElementById('installBanner').classList.remove('show');
-        localStorage.setItem('installBannerDismissed', 'true');
-    }
-
-    // 앱 설치 완료 감지
-    window.addEventListener('appinstalled', function() {
-        console.log('PWA 설치 완료');
-        hideInstallBanner();
-        showToast('앱이 성공적으로 설치되었습니다!');
-    });
-
-    // iOS에서 standalone 모드 확인
-    if (window.navigator.standalone) {
-        console.log('iOS standalone 모드에서 실행 중');
-    }
-
-    // Android에서 standalone 모드 확인
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-        console.log('Android standalone 모드에서 실행 중');
-    }
-    </script>
-    <!-- ⭐ 여기까지 추가 끝 ⭐ -->
 </body>
 </html>
