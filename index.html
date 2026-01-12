@@ -199,26 +199,47 @@
 
         .link-manage-btns {
             display: flex;
-            gap: 4px;
+            gap: 8px;
         }
 
         .link-manage-btns button {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border: none;
             border-radius: 6px;
-            background: var(--bg-warm);
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: background 0.2s;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .link-manage-btns .link-edit-btn {
+            background: transparent;
+            color: var(--primary);
+            position: relative !important;
+            opacity: 1 !important;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px !important;
+            border: 1px solid var(--border);
         }
 
         .link-manage-btns .link-edit-btn:hover {
-            background: var(--primary-light);
+            background: var(--bg-warm);
+            transform: scale(1.05);
+        }
+
+        .link-manage-btns .link-delete-btn {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--border);
         }
 
         .link-manage-btns .link-delete-btn:hover {
-            background: #ffebee;
+            background: var(--bg-warm);
+            transform: scale(1.05);
         }
 
         .thanks-item {
@@ -274,7 +295,7 @@
             color: var(--text-light) !important;
         }
 
-        .link-edit-btn {
+        .link-card-edit-btn {
             position: absolute;
             top: 4px;
             right: 4px;
@@ -291,7 +312,7 @@
             justify-content: center;
         }
 
-        .link-edit-btn:hover { opacity: 1; }
+        .link-card-edit-btn:hover { opacity: 1; }
 
         .notice-item {
             padding: 16px;
@@ -2160,8 +2181,8 @@
                     '<span class="link-icon">' + (l.icon || '🔗') + '</span>' +
                     '<span class="link-name">' + l.name + '</span>' +
                     '<div class="link-manage-btns">' +
-                    '<button class="link-edit-btn" onclick="editLinkFromManage(\'' + l.id + '\')">✏️</button>' +
-                    '<button class="link-delete-btn" onclick="deleteLinkDirect(\'' + l.id + '\')">🗑️</button>' +
+                    '<button class="link-edit-btn" onclick="event.stopPropagation();editLinkFromManage(\'' + l.id + '\')">✏️</button>' +
+                    '<button class="link-delete-btn" onclick="event.stopPropagation();deleteLinkDirect(\'' + l.id + '\')">🗑️</button>' +
                     '</div></div>';
             }).join('');
 
