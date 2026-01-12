@@ -16,6 +16,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <!-- Mammoth.js for docx parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     
     <style>
         :root {
@@ -112,6 +113,116 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        .card-header-with-btn {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .card-header-with-btn .card-title {
+            margin-bottom: 0;
+        }
+
+        .card-manage-btn {
+            background: var(--bg-warm);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .card-manage-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .link-order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .link-order-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            user-select: none;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+
+        .link-order-item.sortable-ghost {
+            opacity: 0.4;
+            background: var(--bg-warm);
+        }
+
+        .link-order-item.sortable-chosen {
+            background: var(--bg-warm);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            transform: scale(1.02);
+            z-index: 10;
+        }
+
+        .link-order-item .drag-handle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            cursor: grab;
+            padding: 4px;
+        }
+
+        .link-order-item .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .link-order-item .link-icon {
+            font-size: 1.3rem;
+        }
+
+        .link-order-item .link-name {
+            flex: 1;
+            font-weight: 500;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .link-manage-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .link-manage-btns button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            background: var(--bg-warm);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .link-manage-btns .link-edit-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .link-manage-btns .link-delete-btn:hover {
+            background: #ffebee;
+        }
+
+        .thanks-item {
+            border-left: 3px solid #e91e63;
         }
 
         .welcome-card {
@@ -348,15 +459,72 @@
             background: var(--bg-warm);
             border-radius: 10px;
             margin-bottom: 8px;
-            align-items: center;
+            align-items: flex-start;
         }
 
         .schedule-date { min-width: 50px; text-align: center; }
         .schedule-day { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
         .schedule-weekday { font-size: 0.75rem; color: var(--text-light); }
-        .schedule-info { flex: 1; }
-        .schedule-title { font-weight: 500; margin-bottom: 4px; }
+        .schedule-info { flex: 1; min-width: 0; }
+        
+        .schedule-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .schedule-title { 
+            font-weight: 500; 
+            margin-bottom: 4px; 
+            flex: 1;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
         .schedule-time { font-size: 0.85rem; color: var(--text-secondary); }
+
+        .schedule-item-btns {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .schedule-item-btns button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            background: white;
+        }
+
+        .schedule-item-btns .edit-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .schedule-item-btns .delete-btn:hover {
+            background: #ffebee;
+        }
+
+        .schedule-search {
+            margin-bottom: 12px;
+        }
+
+        .schedule-search .form-input {
+            background: var(--bg-warm);
+            border: 1px solid var(--border);
+        }
+
+        .auto-link {
+            color: var(--primary);
+            text-decoration: underline;
+            word-break: break-all;
+        }
+
+        .auto-link:hover {
+            color: var(--accent);
+        }
 
         .dept-header {
             display: flex;
@@ -700,8 +868,65 @@
         }
 
         .selected-schedule-item {
-            padding: 10px 0;
+            padding: 12px;
             border-bottom: 1px solid var(--border);
+            background: var(--bg-warm);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .selected-schedule-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .schedule-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .schedule-actions button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .schedule-actions button:hover {
+            transform: scale(1.1);
+        }
+
+        .schedule-actions .edit-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .schedule-actions .delete-btn:hover {
+            background: #ffebee;
+        }
+
+        .schedule-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .schedule-time {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .auto-resize {
+            min-height: 60px;
+            max-height: 200px;
+            resize: none;
+            overflow-y: auto;
         }
 
         .mt-16 { margin-top: 16px; }
@@ -974,7 +1199,10 @@
                 <p class="verse-reference" id="verseReference">데살로니가전서 5:16-18</p>
             </div>
             <div class="card">
-                <h3 class="card-title">⭐ 즐겨찾기</h3>
+                <div class="card-header-with-btn">
+                    <h3 class="card-title">⭐ 즐겨찾기</h3>
+                    <button class="card-manage-btn" onclick="openLinkManageModal()">⚙️ 관리</button>
+                </div>
                 <div class="quick-links" id="quickLinks"></div>
             </div>
             <div class="card">
@@ -1019,6 +1247,19 @@
             </div>
         </section>
 
+        <section id="thanks" class="section">
+            <div class="card">
+                <h3 class="card-title">💝 감사제목</h3>
+                <div class="month-selector">
+                    <button class="month-btn" onclick="changeThanksMonth(-1)">‹</button>
+                    <span class="current-month" id="currentThanksMonth"></span>
+                    <button class="month-btn" onclick="changeThanksMonth(1)">›</button>
+                </div>
+                <button class="btn btn-primary btn-block mb-16" onclick="openThanksModal()">✏️ 감사제목 올리기</button>
+                <div id="thanksList"></div>
+            </div>
+        </section>
+
         <section id="schedule" class="section">
             <div class="card">
                 <div class="calendar-header">
@@ -1037,6 +1278,9 @@
                     <button class="quick-add-btn" onclick="openQuickScheduleModal()">➕ 이 날짜에 일정 추가</button>
                 </div>
                 <h4 class="card-title mt-16">📋 이번 달 일정</h4>
+                <div class="schedule-search">
+                    <input type="text" class="form-input" id="scheduleSearchInput" placeholder="🔍 일정 검색..." oninput="searchSchedules()">
+                </div>
                 <div id="monthSchedules"></div>
             </div>
         </section>
@@ -1081,10 +1325,11 @@
     </main>
 
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="showSection('home', this)"><span class="nav-icon">🏠</span><span class="nav-text">홈</span></button>
         <button class="nav-item" onclick="showSection('notice', this)"><span class="nav-icon">📢</span><span class="nav-text">공지</span></button>
-        <button class="nav-item" onclick="showSection('prayer', this)"><span class="nav-icon">🙏</span><span class="nav-text">기도</span></button>
         <button class="nav-item" onclick="showSection('schedule', this)"><span class="nav-icon">📅</span><span class="nav-text">일정</span></button>
+        <button class="nav-item active" onclick="showSection('home', this)"><span class="nav-icon">🏠</span><span class="nav-text">홈</span></button>
+        <button class="nav-item" onclick="showSection('prayer', this)"><span class="nav-icon">🙏</span><span class="nav-text">기도</span></button>
+        <button class="nav-item" onclick="showSection('thanks', this)"><span class="nav-icon">💝</span><span class="nav-text">감사</span></button>
         <button class="nav-item" onclick="showSection('department', this)"><span class="nav-icon">👥</span><span class="nav-text">부서</span></button>
     </nav>
 
@@ -1106,6 +1351,27 @@
                     <textarea class="form-textarea" id="prayerContent" placeholder="기도제목을 나눠주세요"></textarea>
                 </div>
                 <button class="btn btn-primary btn-block" onclick="savePrayer()">등록하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="thanksModal" onclick="if(event.target===this)closeModal('thanksModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="thanksModalTitle">감사제목 올리기</h3>
+                <button class="modal-close" onclick="closeModal('thanksModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="thanksEditId">
+                <div class="form-group">
+                    <label class="form-label">이름</label>
+                    <input type="text" class="form-input" id="thanksAuthor" placeholder="익명 가능">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">감사제목</label>
+                    <textarea class="form-textarea" id="thanksContent" placeholder="감사한 일을 나눠주세요"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveThanks()">등록하기</button>
             </div>
         </div>
     </div>
@@ -1156,6 +1422,22 @@
                     <button class="btn btn-primary" style="flex:1" onclick="saveLink()">저장</button>
                     <button class="btn btn-danger" id="deleteLinkBtn" style="display:none" onclick="deleteLink()">삭제</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="linkOrderModal" onclick="if(event.target===this)closeModal('linkOrderModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙️ 즐겨찾기 관리</h3>
+                <button class="modal-close" onclick="closeModal('linkOrderModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <button class="btn btn-primary btn-block mb-16" onclick="closeModal('linkOrderModal');openLinkModal();">➕ 새 즐겨찾기 추가</button>
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px; text-align:center;">
+                    ☰ 드래그하여 순서 변경
+                </p>
+                <div id="linkOrderList" class="link-order-list"></div>
             </div>
         </div>
     </div>
@@ -1229,15 +1511,16 @@
                 <button class="modal-close" onclick="closeModal('quickScheduleModal')">✕</button>
             </div>
             <div class="modal-body">
+                <input type="hidden" id="scheduleEditId">
                 <div class="form-group">
                     <label class="form-label">제목</label>
-                    <input type="text" class="form-input" id="quickScheduleInput" placeholder="일정 제목">
+                    <textarea class="form-input auto-resize" id="quickScheduleInput" placeholder="일정 내용을 입력하세요" rows="2" oninput="autoResize(this)"></textarea>
                 </div>
                 <div class="form-group">
                     <label class="form-label">시간 (선택)</label>
                     <input type="text" class="form-input" id="quickScheduleTime" placeholder="예: 오전 11시">
                 </div>
-                <button class="btn btn-primary btn-block" onclick="saveQuickSchedule()">등록</button>
+                <button class="btn btn-primary btn-block" id="scheduleSubmitBtn" onclick="saveQuickSchedule()">등록</button>
             </div>
         </div>
     </div>
@@ -1308,12 +1591,14 @@
 
         var notices = [];
         var prayers = [];
+        var thanks = [];
         var schedules = [];
         var links = [];
         var departments = [];
         var deptPosts = {};
         var comments = {};
         var dailyVerses = {};
+        var currentThanksMonth = new Date();
 
         var linkIcons = ['✝️', '⛪', '🙏', '📖', '🕊️', '👼', '🔔', '🕯️', '💒', '✨', '🌟', '❤️', '💝', '🤝', '🌈', '🌾', '🍞', '🐑', '🐟', '⭐', '🌅', '💡', '🛐', '👨‍👩‍👧‍👦', '🙌', '📺', '🎵', '🎬', '📷', '🎧', '💬', '📧', '☎️', '💌', '🌐', '☕', '🍽️', '🛒', '💰', '🎁', '🏠', '🏢', '📍', '🚗', '✈️', '📱', '💻', '🔍', '📝', '✏️', '📚', '🗂️', '⚙️', '🎯', '🔗'];
         var deptIcons = ['👔', '👗', '🌟', '🎓', '🧒', '🎵', '📚', '🎺', '🎹', '👨‍👩‍👧', '👴', '👵', '💒', '✝️', '📖', '🙏'];
@@ -1379,6 +1664,13 @@
                 prayers = [];
                 snap.forEach(function(c) { prayers.unshift({ id: c.key, ...c.val() }); });
                 renderPrayers();
+            });
+
+            // 감사제목
+            db.ref('thanks').on('value', function(snap) {
+                thanks = [];
+                snap.forEach(function(c) { thanks.unshift({ id: c.key, ...c.val() }); });
+                renderThanks();
             });
 
             // 일정
@@ -1485,6 +1777,19 @@
             if (!str) return '';
             var d = new Date(str);
             return d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일';
+        }
+
+        function linkify(text) {
+            if (!text) return '';
+            // URL 패턴 감지 (http, https, www)
+            var urlPattern = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
+            return text.replace(urlPattern, function(url) {
+                var href = url;
+                if (url.indexOf('http') !== 0) {
+                    href = 'https://' + url;
+                }
+                return '<a href="' + href + '" target="_blank" class="auto-link">' + url + '</a>';
+            });
         }
 
         function setDailyVerse() {
@@ -1751,10 +2056,18 @@
 
         // ========== 즐겨찾기 ==========
         function renderQuickLinks() {
-            var html = links.map(function(l) {
-                return '<a href="' + l.url + '" target="_blank" class="quick-link" style="position:relative;"><span class="link-icon">' + (l.icon || '🔗') + '</span><span class="link-text">' + l.name + '</span><button class="link-edit-btn" onclick="event.preventDefault();event.stopPropagation();editLink(\'' + l.id + '\')">✏️</button></a>';
+            // order 기준 정렬
+            var sortedLinks = links.slice().sort(function(a, b) {
+                return (a.order || 0) - (b.order || 0);
+            });
+            var html = sortedLinks.map(function(l) {
+                return '<a href="' + l.url + '" target="_blank" class="quick-link"><span class="link-icon">' + (l.icon || '🔗') + '</span><span class="link-text">' + l.name + '</span></a>';
             }).join('');
-            html += '<div class="quick-link add-link-btn" onclick="openLinkModal()"><span class="link-icon">➕</span><span class="link-text">추가</span></div>';
+            
+            if (sortedLinks.length === 0) {
+                html = '<p style="color:var(--text-light); text-align:center; padding:20px;">즐겨찾기가 없습니다. 관리에서 추가하세요.</p>';
+            }
+            
             document.getElementById('quickLinks').innerHTML = html;
         }
 
@@ -1796,6 +2109,11 @@
                     showToast('저장되었습니다');
                 });
             } else {
+                // 새 링크는 마지막 순서로 추가
+                var maxOrder = links.reduce(function(max, l) {
+                    return Math.max(max, l.order || 0);
+                }, 0);
+                data.order = maxOrder + 1;
                 db.ref('links').push(data).then(function() {
                     closeModal('linkModal');
                     showToast('저장되었습니다');
@@ -1810,6 +2128,86 @@
             db.ref('links/' + id).remove().then(function() {
                 closeModal('linkModal');
                 showToast('삭제되었습니다');
+            });
+        }
+
+        var linkSortable = null;
+
+        function openLinkManageModal() {
+            renderLinkOrderList();
+            openModal('linkOrderModal');
+        }
+
+        function renderLinkOrderList() {
+            var container = document.getElementById('linkOrderList');
+            // order 기준 정렬
+            var sortedLinks = links.slice().sort(function(a, b) {
+                return (a.order || 0) - (b.order || 0);
+            });
+
+            if (sortedLinks.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-light);">즐겨찾기가 없습니다</p>';
+                return;
+            }
+
+            var html = sortedLinks.map(function(l) {
+                return '<div class="link-order-item" data-id="' + l.id + '">' +
+                    '<span class="drag-handle">☰</span>' +
+                    '<span class="link-icon">' + (l.icon || '🔗') + '</span>' +
+                    '<span class="link-name">' + l.name + '</span>' +
+                    '<div class="link-manage-btns">' +
+                    '<button class="link-edit-btn" onclick="editLinkFromManage(\'' + l.id + '\')">✏️</button>' +
+                    '<button class="link-delete-btn" onclick="deleteLinkDirect(\'' + l.id + '\')">🗑️</button>' +
+                    '</div></div>';
+            }).join('');
+
+            container.innerHTML = html;
+
+            // SortableJS 초기화
+            if (linkSortable) {
+                linkSortable.destroy();
+            }
+
+            linkSortable = new Sortable(container, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: function(evt) {
+                    saveLinkOrder();
+                }
+            });
+        }
+
+        function editLinkFromManage(id) {
+            closeModal('linkOrderModal');
+            editLink(id);
+        }
+
+        function deleteLinkDirect(id) {
+            if (!db) return;
+            var link = links.find(function(l) { return l.id === id; });
+            if (!confirm('"' + (link ? link.name : '') + '" 을(를) 삭제하시겠습니까?')) return;
+            db.ref('links/' + id).remove().then(function() {
+                showToast('삭제되었습니다');
+                renderLinkOrderList();
+            });
+        }
+
+        function saveLinkOrder() {
+            if (!db) return;
+
+            var container = document.getElementById('linkOrderList');
+            var items = container.querySelectorAll('.link-order-item');
+            var updates = {};
+
+            items.forEach(function(item, index) {
+                var id = item.getAttribute('data-id');
+                updates['links/' + id + '/order'] = index;
+            });
+
+            db.ref().update(updates).then(function() {
+                showToast('순서가 저장되었습니다');
             });
         }
 
@@ -1979,6 +2377,72 @@
             showToast('삭제되었습니다');
         }
 
+        // ========== 감사제목 ==========
+        function changeThanksMonth(d) {
+            currentThanksMonth.setMonth(currentThanksMonth.getMonth() + d);
+            renderThanks();
+        }
+
+        function renderThanks() {
+            var container = document.getElementById('thanksList');
+            var monthKey = currentThanksMonth.getFullYear() + '-' + String(currentThanksMonth.getMonth() + 1).padStart(2, '0');
+            document.getElementById('currentThanksMonth').textContent = currentThanksMonth.getFullYear() + '년 ' + (currentThanksMonth.getMonth() + 1) + '월';
+
+            var filtered = thanks.filter(function(t) {
+                return t.month === monthKey;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">💝</div><p>이번 달 감사제목이 없습니다</p></div>';
+                return;
+            }
+            container.innerHTML = filtered.map(function(t) {
+                return '<div class="prayer-item thanks-item"><div class="prayer-actions"><button onclick="openThanksModal(\'' + t.id + '\')">✏️</button><button onclick="deleteThanks(\'' + t.id + '\')">🗑️</button></div><p class="prayer-author">' + (t.author || '익명') + '</p><p class="prayer-content">' + t.content + '</p><p class="prayer-date">' + formatDate(t.date) + '</p></div>';
+            }).join('');
+        }
+
+        function openThanksModal(editId) {
+            document.getElementById('thanksEditId').value = '';
+            document.getElementById('thanksAuthor').value = '';
+            document.getElementById('thanksContent').value = '';
+            document.getElementById('thanksModalTitle').textContent = '감사제목 올리기';
+
+            if (editId) {
+                var t = thanks.find(function(x) { return x.id === editId; });
+                if (t) {
+                    document.getElementById('thanksEditId').value = editId;
+                    document.getElementById('thanksAuthor').value = t.author || '';
+                    document.getElementById('thanksContent').value = t.content || '';
+                    document.getElementById('thanksModalTitle').textContent = '감사제목 수정';
+                }
+            }
+            openModal('thanksModal');
+        }
+
+        function saveThanks() {
+            if (!db) { showToast('연결 실패'); return; }
+            var editId = document.getElementById('thanksEditId').value;
+            var author = document.getElementById('thanksAuthor').value.trim() || '익명';
+            var content = document.getElementById('thanksContent').value.trim();
+            if (!content) { showToast('감사 내용을 입력해주세요'); return; }
+
+            var monthKey = currentThanksMonth.getFullYear() + '-' + String(currentThanksMonth.getMonth() + 1).padStart(2, '0');
+            var data = { author: author, content: content, month: monthKey, date: new Date().toISOString() };
+
+            var promise = editId ? db.ref('thanks/' + editId).update(data) : db.ref('thanks').push(data);
+            promise.then(function() {
+                closeModal('thanksModal');
+                showToast(editId ? '수정되었습니다' : '등록되었습니다');
+            });
+        }
+
+        function deleteThanks(id) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('thanks/' + id).remove();
+            showToast('삭제되었습니다');
+        }
+
         // ========== 일정 ==========
         function changeCalendarMonth(d) {
             currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + d);
@@ -2014,40 +2478,96 @@
                 schedulesDiv.innerHTML = '<p style="color:var(--text-light)">이 날짜에 일정이 없습니다</p>';
             } else {
                 schedulesDiv.innerHTML = filtered.map(function(s) {
-                    return '<div class="selected-schedule-item"><div style="font-weight:500">📌 ' + s.title + '</div>' + (s.time ? '<div style="font-size:0.85rem;color:var(--text-secondary)">🕐 ' + s.time + '</div>' : '') + '<button class="delete-btn" onclick="deleteSchedule(\'' + s.id + '\')">🗑️ 삭제</button></div>';
+                    return '<div class="selected-schedule-item">' +
+                        '<div class="schedule-actions">' +
+                        '<button class="edit-btn" onclick="editSchedule(\'' + s.id + '\')" title="수정">✏️</button>' +
+                        '<button class="delete-btn" onclick="deleteSchedule(\'' + s.id + '\')" title="삭제">🗑️</button>' +
+                        '</div>' +
+                        '<div class="schedule-title">📌 ' + linkify(s.title) + '</div>' +
+                        (s.time ? '<div class="schedule-time">🕐 ' + s.time + '</div>' : '') +
+                        '</div>';
                 }).join('');
             }
             container.style.display = 'block';
         }
 
-        function openQuickScheduleModal() {
-            if (!selectedDate) { showToast('먼저 날짜를 선택해주세요'); return; }
-            var d = new Date(selectedDate + 'T00:00:00');
-            var wd = ['일','월','화','수','목','금','토'];
-            document.getElementById('quickScheduleTitle').textContent = '📅 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + wd[d.getDay()] + ') 일정 등록';
-            document.getElementById('quickScheduleInput').value = '';
-            document.getElementById('quickScheduleTime').value = '';
+        function openQuickScheduleModal(editId) {
+            if (!selectedDate && !editId) { showToast('먼저 날짜를 선택해주세요'); return; }
+            
+            var d, wd = ['일','월','화','수','목','금','토'];
+            
+            if (editId) {
+                // 수정 모드
+                var schedule = schedules.find(function(s) { return s.id === editId; });
+                if (!schedule) return;
+                
+                d = new Date(schedule.date + 'T00:00:00');
+                document.getElementById('scheduleEditId').value = editId;
+                document.getElementById('quickScheduleTitle').textContent = '✏️ 일정 수정';
+                document.getElementById('quickScheduleInput').value = schedule.title;
+                document.getElementById('quickScheduleTime').value = schedule.time || '';
+                document.getElementById('scheduleSubmitBtn').textContent = '수정';
+                selectedDate = schedule.date;
+            } else {
+                // 등록 모드
+                d = new Date(selectedDate + 'T00:00:00');
+                document.getElementById('scheduleEditId').value = '';
+                document.getElementById('quickScheduleTitle').textContent = '📅 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + wd[d.getDay()] + ') 일정 등록';
+                document.getElementById('quickScheduleInput').value = '';
+                document.getElementById('quickScheduleTime').value = '';
+                document.getElementById('scheduleSubmitBtn').textContent = '등록';
+            }
+            
+            // textarea 높이 초기화
+            var textarea = document.getElementById('quickScheduleInput');
+            textarea.style.height = 'auto';
+            setTimeout(function() { autoResize(textarea); }, 10);
+            
             openModal('quickScheduleModal');
+        }
+
+        function editSchedule(id) {
+            openQuickScheduleModal(id);
+        }
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 200) + 'px';
         }
 
         function saveQuickSchedule() {
             if (!db) { showToast('연결 실패'); return; }
             if (!selectedDate) { showToast('날짜를 선택해주세요'); return; }
+            var editId = document.getElementById('scheduleEditId').value;
             var title = document.getElementById('quickScheduleInput').value.trim();
             var time = document.getElementById('quickScheduleTime').value.trim();
-            if (!title) { showToast('일정 제목을 입력해주세요'); return; }
+            if (!title) { showToast('일정 내용을 입력해주세요'); return; }
 
-            console.log('일정 저장:', { date: selectedDate, title: title, time: time });
-            db.ref('schedules').push({
-                date: selectedDate, title: title, time: time || ''
-            }).then(function() {
-                console.log('저장 성공');
-                closeModal('quickScheduleModal');
-                showToast('일정이 등록되었습니다');
-            }).catch(function(e) {
-                console.error('저장 실패:', e);
-                showToast('등록 실패');
-            });
+            var data = { date: selectedDate, title: title, time: time || '' };
+
+            if (editId) {
+                // 수정
+                console.log('일정 수정:', { id: editId, ...data });
+                db.ref('schedules/' + editId).update(data).then(function() {
+                    closeModal('quickScheduleModal');
+                    showToast('일정이 수정되었습니다');
+                    showSelectedDateSchedules();
+                }).catch(function(e) {
+                    console.error('수정 실패:', e);
+                    showToast('수정 실패');
+                });
+            } else {
+                // 등록
+                console.log('일정 저장:', data);
+                db.ref('schedules').push(data).then(function() {
+                    console.log('저장 성공');
+                    closeModal('quickScheduleModal');
+                    showToast('일정이 등록되었습니다');
+                }).catch(function(e) {
+                    console.error('저장 실패:', e);
+                    showToast('등록 실패');
+                });
+            }
         }
 
         function renderCalendar() {
@@ -2100,24 +2620,72 @@
             grid.innerHTML = html;
         }
 
-        function renderSchedules() {
+        function renderSchedules(searchKeyword) {
             var container = document.getElementById('monthSchedules');
             var year = currentCalendarMonth.getFullYear();
             var month = currentCalendarMonth.getMonth();
             var monthKey = year + '-' + String(month+1).padStart(2,'0');
-            var filtered = schedules.filter(function(s) { return s.date && s.date.indexOf(monthKey) === 0; });
+            var filtered;
+            var isSearchMode = searchKeyword && searchKeyword.trim();
+            
+            if (isSearchMode) {
+                // 검색 모드: 이전 1년 ~ 이후 5년 범위
+                var now = new Date();
+                var startDate = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+                var endDate = new Date(now.getFullYear() + 5, now.getMonth(), 28);
+                var startKey = startDate.getFullYear() + '-' + String(startDate.getMonth()+1).padStart(2,'0') + '-01';
+                var endKey = endDate.getFullYear() + '-' + String(endDate.getMonth()+1).padStart(2,'0') + '-28';
+                
+                var keyword = searchKeyword.trim().toLowerCase();
+                filtered = schedules.filter(function(s) {
+                    if (!s.date || s.date < startKey || s.date > endKey) return false;
+                    return (s.title && s.title.toLowerCase().indexOf(keyword) !== -1) ||
+                           (s.time && s.time.toLowerCase().indexOf(keyword) !== -1);
+                });
+            } else {
+                // 일반 모드: 이번 달만
+                filtered = schedules.filter(function(s) { return s.date && s.date.indexOf(monthKey) === 0; });
+            }
+            
             filtered.sort(function(a, b) { return a.date.localeCompare(b.date); });
             var wd = ['일','월','화','수','목','금','토'];
 
             if (filtered.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>이번 달 일정이 없습니다</p></div>';
+                if (isSearchMode) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>검색 결과가 없습니다</p><p style="font-size:0.85rem;color:var(--text-light);">최근 1년 ~ 향후 5년 범위</p></div>';
+                } else {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>이번 달 일정이 없습니다</p></div>';
+                }
                 return;
             }
 
             container.innerHTML = filtered.map(function(s) {
                 var d = new Date(s.date + 'T00:00:00');
-                return '<div class="schedule-item"><div class="schedule-date"><div class="schedule-day">' + d.getDate() + '</div><div class="schedule-weekday">' + wd[d.getDay()] + '</div></div><div class="schedule-info"><div class="schedule-title">' + s.title + '</div>' + (s.time ? '<div class="schedule-time">🕐 ' + s.time + '</div>' : '') + '</div><button class="delete-btn" onclick="deleteSchedule(\'' + s.id + '\')">🗑️</button></div>';
+                var dateDisplay = isSearchMode 
+                    ? '<div class="schedule-day">' + (d.getMonth()+1) + '/' + d.getDate() + '</div><div class="schedule-weekday">' + d.getFullYear() + '</div>'
+                    : '<div class="schedule-day">' + d.getDate() + '</div><div class="schedule-weekday">' + wd[d.getDay()] + '</div>';
+                return '<div class="schedule-item">' +
+                    '<div class="schedule-date">' + dateDisplay + '</div>' +
+                    '<div class="schedule-info">' +
+                    '<div class="schedule-title-row">' +
+                    '<div class="schedule-title">' + linkify(s.title) + '</div>' +
+                    '<div class="schedule-item-btns">' +
+                    '<button class="edit-btn" onclick="editSchedule(\'' + s.id + '\')">✏️</button>' +
+                    '<button class="delete-btn" onclick="deleteSchedule(\'' + s.id + '\')">🗑️</button>' +
+                    '</div></div>' +
+                    (s.time ? '<div class="schedule-time">🕐 ' + s.time + '</div>' : '') +
+                    '</div></div>';
             }).join('');
+            
+            // 검색 모드일 때 결과 개수 표시
+            if (isSearchMode) {
+                container.insertAdjacentHTML('afterbegin', '<p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px;">🔍 검색 결과: ' + filtered.length + '건 (최근 1년 ~ 향후 5년)</p>');
+            }
+        }
+
+        function searchSchedules() {
+            var keyword = document.getElementById('scheduleSearchInput').value;
+            renderSchedules(keyword);
         }
 
         function deleteSchedule(id) {
