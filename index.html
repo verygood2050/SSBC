@@ -213,17 +213,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
         }
 
         .link-manage-btns .link-edit-btn {
             background: transparent;
             color: var(--primary);
-            position: relative !important;
-            opacity: 1 !important;
-            width: 36px;
-            height: 36px;
-            border-radius: 6px !important;
             border: 1px solid var(--border);
+            position: relative !important;
+            top: auto !important;
+            right: auto !important;
+            opacity: 1 !important;
         }
 
         .link-manage-btns .link-edit-btn:hover {
@@ -295,7 +295,7 @@
             color: var(--text-light) !important;
         }
 
-        .link-card-edit-btn {
+        .link-edit-btn {
             position: absolute;
             top: 4px;
             right: 4px;
@@ -312,7 +312,7 @@
             justify-content: center;
         }
 
-        .link-card-edit-btn:hover { opacity: 1; }
+        .link-edit-btn:hover { opacity: 1; }
 
         .notice-item {
             padding: 16px;
@@ -1525,6 +1525,49 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="adminPasswordModal" onclick="if(event.target===this)closeModal('adminPasswordModal')">
+        <div class="modal" style="max-width: 350px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🔐 관리자 인증</h3>
+                <button class="modal-close" onclick="closeModal('adminPasswordModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="password-prompt">
+                    <div class="lock-big">🔑</div>
+                    <p>관리자 비밀번호를 입력하세요</p>
+                    <input type="password" id="adminPasswordInput" placeholder="비밀번호" onkeypress="if(event.key==='Enter')checkAdminPassword()">
+                    <p class="password-error" id="adminPasswordError">비밀번호가 틀렸습니다</p>
+                    <button class="btn btn-primary btn-block" onclick="checkAdminPassword()">확인</button>
+                    <button class="btn btn-block mt-8" style="background:var(--bg-warm);color:var(--text-secondary);border:1px solid var(--border);" onclick="closeModal('adminPasswordModal');openChangePasswordModal()">🔑 비밀번호 변경</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="changePasswordModal" onclick="if(event.target===this)closeModal('changePasswordModal')">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🔑 관리자 비밀번호 변경</h3>
+                <button class="modal-close" onclick="closeModal('changePasswordModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">현재 비밀번호</label>
+                    <input type="password" class="form-input" id="currentPassword" placeholder="현재 비밀번호">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">새 비밀번호</label>
+                    <input type="password" class="form-input" id="newPassword" placeholder="새 비밀번호">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">새 비밀번호 확인</label>
+                    <input type="password" class="form-input" id="confirmPassword" placeholder="새 비밀번호 확인">
+                </div>
+                <button class="btn btn-primary btn-block" onclick="changeAdminPassword()">비밀번호 변경</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="quickScheduleModal" onclick="if(event.target===this)closeModal('quickScheduleModal')">
         <div class="modal" style="max-width: 400px;">
             <div class="modal-header">
@@ -1613,6 +1656,7 @@
         var selectedDeptIcon = '👔';
         var currentNoticeId = null;
         var pendingPost = null;
+        var pendingAdminAction = null; // 관리자 인증 대기 중인 작업
 
         var notices = [];
         var prayers = [];
@@ -1624,6 +1668,8 @@
         var comments = {};
         var dailyVerses = {};
         var currentThanksMonth = new Date();
+        
+        var adminPassword = ''; // Firebase에서 불러올 관리자 비밀번호
 
         var linkIcons = ['✝️', '⛪', '🙏', '📖', '🕊️', '👼', '🔔', '🕯️', '💒', '✨', '🌟', '❤️', '💝', '🤝', '🌈', '🌾', '🍞', '🐑', '🐟', '⭐', '🌅', '💡', '🛐', '👨‍👩‍👧‍👦', '🙌', '📺', '🎵', '🎬', '📷', '🎧', '💬', '📧', '☎️', '💌', '🌐', '☕', '🍽️', '🛒', '💰', '🎁', '🏠', '🏢', '📍', '🚗', '✈️', '📱', '💻', '🔍', '📝', '✏️', '📚', '🗂️', '⚙️', '🎯', '🔗'];
         var deptIcons = ['👔', '👗', '🌟', '🎓', '🧒', '🎵', '📚', '🎺', '🎹', '👨‍👩‍👧', '👴', '👵', '💒', '✝️', '📖', '🙏'];
@@ -1766,6 +1812,12 @@
                 console.log('말씀 로드:', Object.keys(dailyVerses).length + '개');
                 displayTodayVerse();
             });
+
+            // 관리자 비밀번호
+            db.ref('adminPassword').on('value', function(snap) {
+                adminPassword = snap.val() || '1234'; // 기본값 1234
+                console.log('관리자 비밀번호 로드 완료');
+            });
         }
 
         // ========== 유틸리티 ==========
@@ -1843,8 +1895,10 @@
         }
 
         function openVerseModal() {
-            renderVerseInputs();
-            openModal('verseModal');
+            requireAdminPassword(function() {
+                renderVerseInputs();
+                openModal('verseModal');
+            });
         }
 
         function switchVerseTab(tab) {
@@ -2159,8 +2213,10 @@
         var linkSortable = null;
 
         function openLinkManageModal() {
-            renderLinkOrderList();
-            openModal('linkOrderModal');
+            requireAdminPassword(function() {
+                renderLinkOrderList();
+                openModal('linkOrderModal');
+            });
         }
 
         function renderLinkOrderList() {
@@ -2181,8 +2237,8 @@
                     '<span class="link-icon">' + (l.icon || '🔗') + '</span>' +
                     '<span class="link-name">' + l.name + '</span>' +
                     '<div class="link-manage-btns">' +
-                    '<button class="link-edit-btn" onclick="event.stopPropagation();editLinkFromManage(\'' + l.id + '\')">✏️</button>' +
-                    '<button class="link-delete-btn" onclick="event.stopPropagation();deleteLinkDirect(\'' + l.id + '\')">🗑️</button>' +
+                    '<button class="link-edit-btn" onclick="editLinkFromManage(\'' + l.id + '\')">✏️</button>' +
+                    '<button class="link-delete-btn" onclick="deleteLinkDirect(\'' + l.id + '\')">🗑️</button>' +
                     '</div></div>';
             }).join('');
 
@@ -2895,6 +2951,73 @@
                 document.getElementById('passwordError').classList.add('show');
                 document.getElementById('passwordInput').value = '';
             }
+        }
+
+        function checkAdminPassword() {
+            var input = document.getElementById('adminPasswordInput').value;
+            if (input === adminPassword) {
+                closeModal('adminPasswordModal');
+                document.getElementById('adminPasswordInput').value = '';
+                document.getElementById('adminPasswordError').classList.remove('show');
+                // 대기 중인 작업 실행
+                if (pendingAdminAction) {
+                    pendingAdminAction();
+                    pendingAdminAction = null;
+                }
+            } else {
+                document.getElementById('adminPasswordError').classList.add('show');
+                document.getElementById('adminPasswordInput').value = '';
+            }
+        }
+
+        function requireAdminPassword(action) {
+            pendingAdminAction = action;
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('adminPasswordError').classList.remove('show');
+            openModal('adminPasswordModal');
+        }
+
+        function openChangePasswordModal() {
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            openModal('changePasswordModal');
+        }
+
+        function changeAdminPassword() {
+            if (!db) { showToast('연결 실패'); return; }
+            
+            var current = document.getElementById('currentPassword').value;
+            var newPwd = document.getElementById('newPassword').value;
+            var confirm = document.getElementById('confirmPassword').value;
+            
+            if (!current || !newPwd || !confirm) {
+                showToast('모든 항목을 입력해주세요');
+                return;
+            }
+            
+            if (current !== adminPassword) {
+                showToast('현재 비밀번호가 틀렸습니다');
+                return;
+            }
+            
+            if (newPwd.length < 4) {
+                showToast('비밀번호는 4자 이상이어야 합니다');
+                return;
+            }
+            
+            if (newPwd !== confirm) {
+                showToast('새 비밀번호가 일치하지 않습니다');
+                return;
+            }
+            
+            db.ref('adminPassword').set(newPwd).then(function() {
+                showToast('비밀번호가 변경되었습니다');
+                closeModal('changePasswordModal');
+            }).catch(function(err) {
+                showToast('변경 실패');
+                console.error(err);
+            });
         }
 
         function addDeptPost() {
