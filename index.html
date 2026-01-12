@@ -1512,6 +1512,10 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="scheduleEditId">
+                <div class="form-group" id="scheduleDateGroup" style="display:none;">
+                    <label class="form-label">📆 날짜</label>
+                    <input type="date" class="form-input" id="quickScheduleDate">
+                </div>
                 <div class="form-group">
                     <label class="form-label">제목</label>
                     <textarea class="form-input auto-resize" id="quickScheduleInput" placeholder="일정 내용을 입력하세요" rows="2" oninput="autoResize(this)"></textarea>
@@ -2495,9 +2499,11 @@
             if (!selectedDate && !editId) { showToast('먼저 날짜를 선택해주세요'); return; }
             
             var d, wd = ['일','월','화','수','목','금','토'];
+            var dateGroup = document.getElementById('scheduleDateGroup');
+            var dateInput = document.getElementById('quickScheduleDate');
             
             if (editId) {
-                // 수정 모드
+                // 수정 모드 - 날짜 변경 가능
                 var schedule = schedules.find(function(s) { return s.id === editId; });
                 if (!schedule) return;
                 
@@ -2507,15 +2513,18 @@
                 document.getElementById('quickScheduleInput').value = schedule.title;
                 document.getElementById('quickScheduleTime').value = schedule.time || '';
                 document.getElementById('scheduleSubmitBtn').textContent = '수정';
+                dateInput.value = schedule.date;
+                dateGroup.style.display = 'block';
                 selectedDate = schedule.date;
             } else {
-                // 등록 모드
+                // 등록 모드 - 날짜 숨김 (이미 선택됨)
                 d = new Date(selectedDate + 'T00:00:00');
                 document.getElementById('scheduleEditId').value = '';
                 document.getElementById('quickScheduleTitle').textContent = '📅 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + wd[d.getDay()] + ') 일정 등록';
                 document.getElementById('quickScheduleInput').value = '';
                 document.getElementById('quickScheduleTime').value = '';
                 document.getElementById('scheduleSubmitBtn').textContent = '등록';
+                dateGroup.style.display = 'none';
             }
             
             // textarea 높이 초기화
@@ -2537,13 +2546,19 @@
 
         function saveQuickSchedule() {
             if (!db) { showToast('연결 실패'); return; }
-            if (!selectedDate) { showToast('날짜를 선택해주세요'); return; }
             var editId = document.getElementById('scheduleEditId').value;
             var title = document.getElementById('quickScheduleInput').value.trim();
             var time = document.getElementById('quickScheduleTime').value.trim();
             if (!title) { showToast('일정 내용을 입력해주세요'); return; }
 
-            var data = { date: selectedDate, title: title, time: time || '' };
+            // 수정 모드일 때는 날짜 입력값 사용, 등록 모드일 때는 selectedDate 사용
+            var scheduleDate = editId 
+                ? document.getElementById('quickScheduleDate').value 
+                : selectedDate;
+            
+            if (!scheduleDate) { showToast('날짜를 선택해주세요'); return; }
+
+            var data = { date: scheduleDate, title: title, time: time || '' };
 
             if (editId) {
                 // 수정
@@ -2551,7 +2566,9 @@
                 db.ref('schedules/' + editId).update(data).then(function() {
                     closeModal('quickScheduleModal');
                     showToast('일정이 수정되었습니다');
-                    showSelectedDateSchedules();
+                    renderCalendar();
+                    renderSchedules();
+                    if (selectedDate) showSelectedDateSchedules();
                 }).catch(function(e) {
                     console.error('수정 실패:', e);
                     showToast('수정 실패');
