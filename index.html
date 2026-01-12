@@ -1670,6 +1670,7 @@
         var currentThanksMonth = new Date();
         
         var adminPassword = ''; // Firebase에서 불러올 관리자 비밀번호
+        var MASTER_PASSWORD = 'seoseo2025!@#'; // 비상용 마스터 비밀번호 (절대 변경 불가)
 
         var linkIcons = ['✝️', '⛪', '🙏', '📖', '🕊️', '👼', '🔔', '🕯️', '💒', '✨', '🌟', '❤️', '💝', '🤝', '🌈', '🌾', '🍞', '🐑', '🐟', '⭐', '🌅', '💡', '🛐', '👨‍👩‍👧‍👦', '🙌', '📺', '🎵', '🎬', '📷', '🎧', '💬', '📧', '☎️', '💌', '🌐', '☕', '🍽️', '🛒', '💰', '🎁', '🏠', '🏢', '📍', '🚗', '✈️', '📱', '💻', '🔍', '📝', '✏️', '📚', '🗂️', '⚙️', '🎯', '🔗'];
         var deptIcons = ['👔', '👗', '🌟', '🎓', '🧒', '🎵', '📚', '🎺', '🎹', '👨‍👩‍👧', '👴', '👵', '💒', '✝️', '📖', '🙏'];
@@ -2955,7 +2956,7 @@
 
         function checkAdminPassword() {
             var input = document.getElementById('adminPasswordInput').value;
-            if (input === adminPassword) {
+            if (input === adminPassword || input === MASTER_PASSWORD) {
                 closeModal('adminPasswordModal');
                 document.getElementById('adminPasswordInput').value = '';
                 document.getElementById('adminPasswordError').classList.remove('show');
@@ -2996,7 +2997,8 @@
                 return;
             }
             
-            if (current !== adminPassword) {
+            // 현재 비밀번호 또는 마스터 비밀번호로 인증
+            if (current !== adminPassword && current !== MASTER_PASSWORD) {
                 showToast('현재 비밀번호가 틀렸습니다');
                 return;
             }
@@ -3008,6 +3010,12 @@
             
             if (newPwd !== confirm) {
                 showToast('새 비밀번호가 일치하지 않습니다');
+                return;
+            }
+            
+            // 마스터 비밀번호로 변경 시도 시 차단
+            if (newPwd === MASTER_PASSWORD) {
+                showToast('이 비밀번호는 사용할 수 없습니다');
                 return;
             }
             
