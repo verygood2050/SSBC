@@ -3,6 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>서서울성서침례교회</title>
+    <style>
+        /* 조회수 스타일 추가 */
+        .view-count { font-size: 0.75rem; color: #999; display: inline-flex; align-items: center; gap: 3px; margin-left: 8px; font-weight: normal; }
+        .title-row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- 캐시 방지 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -2927,6 +2940,28 @@
             if (!confirm('삭제하시겠습니까?')) return;
             db.ref('deptPosts/' + deptId + '/' + postId).remove();
             showToast('삭제되었습니다');
+        }
+    </script>
+</body>
+</html>
+// 조회수 증가 함수
+        function incrementView(path) {
+            if (!db) return;
+            db.ref(path + '/views').transaction(function(current) {
+                return (current || 0) + 1;
+            });
+        }
+
+        // 공지사항 열 때 조회수 증가 연결
+        function openNoticeModal(id) {
+            incrementView('notices/' + id);
+            // ... 기존 모달 코드 ...
+        }
+
+        // 부서게시글 열 때 조회수 증가 연결
+        function viewDeptPost(deptId, postId) {
+            incrementView('deptPosts/' + deptId + '/' + postId);
+            // ... 기존 게시글 코드 ...
         }
     </script>
 </body>
