@@ -1,4 +1,1312 @@
-<section id="department" class="section">
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 캐시 방지 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>서서울성서침례교회</title>
+    <meta name="theme-color" content="#1e3a5f">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK - 반드시 먼저 로드 -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- Mammoth.js for docx parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2d5a8a;
+            --primary-dark: #0f1f33;
+            --accent: #c9a227;
+            --bg-warm: #faf8f5;
+            --bg-card: #ffffff;
+            --text-primary: #2c2c2c;
+            --text-secondary: #666666;
+            --text-light: #999999;
+            --border: #e8e4de;
+            --shadow: rgba(30, 58, 95, 0.08);
+            --success: #4a9d6e;
+            --danger: #c75050;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg-warm);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content { max-width: 600px; margin: 0 auto; position: relative; }
+
+        .church-name {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .church-subtitle { font-size: 0.75rem; opacity: 0.8; }
+
+        .connection-status {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+        }
+
+        .status-dot.connected { background: var(--success); }
+
+        .main-content { max-width: 600px; margin: 0 auto; padding: 20px; }
+
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 12px var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header-with-btn {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .card-header-with-btn .card-title {
+            margin-bottom: 0;
+        }
+
+        .card-manage-btn {
+            background: var(--bg-warm);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .card-manage-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .link-order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .link-order-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            user-select: none;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+        }
+
+        .link-order-item.sortable-ghost {
+            opacity: 0.4;
+            background: var(--bg-warm);
+        }
+
+        .link-order-item.sortable-chosen {
+            background: var(--bg-warm);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            transform: scale(1.02);
+            z-index: 10;
+        }
+
+        .link-order-item .drag-handle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            cursor: grab;
+            padding: 4px;
+        }
+
+        .link-order-item .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .link-order-item .link-icon {
+            font-size: 1.3rem;
+        }
+
+        .link-order-item .link-name {
+            flex: 1;
+            font-weight: 500;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .link-manage-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .link-manage-btns button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .link-manage-btns .link-edit-btn {
+            background: transparent;
+            color: var(--primary);
+            position: relative !important;
+            opacity: 1 !important;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px !important;
+            border: 1px solid var(--border);
+        }
+
+        .link-manage-btns .link-edit-btn:hover {
+            background: var(--bg-warm);
+            transform: scale(1.05);
+        }
+
+        .link-manage-btns .link-delete-btn {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--border);
+        }
+
+        .link-manage-btns .link-delete-btn:hover {
+            background: var(--bg-warm);
+            transform: scale(1.05);
+        }
+
+        .thanks-item {
+            border-left: 3px solid #e91e63;
+        }
+
+        .welcome-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+        }
+
+        .welcome-card .card-title { color: white; justify-content: center; font-size: 1.3rem; }
+
+        .daily-verse {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1rem;
+            line-height: 1.8;
+            margin: 16px 0;
+        }
+
+        .verse-reference { font-size: 0.85rem; opacity: 0.8; }
+
+        .quick-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+        .quick-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 8px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-link:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .quick-link .link-icon { font-size: 1.8rem; margin-bottom: 6px; }
+        .quick-link .link-text { font-size: 0.8rem; font-weight: 500; }
+
+        .add-link-btn {
+            border: 2px dashed var(--border) !important;
+            background: transparent !important;
+            color: var(--text-light) !important;
+        }
+
+        .link-card-edit-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .link-card-edit-btn:hover { opacity: 1; }
+
+        .notice-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notice-item:last-child { border-bottom: none; }
+        .notice-item:hover { background: var(--bg-warm); }
+
+        .notice-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .notice-title { font-weight: 500; flex: 1; }
+        .notice-date { font-size: 0.8rem; color: var(--text-light); }
+
+        .notice-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-right: 8px;
+        }
+
+        .notice-delete {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1rem;
+            opacity: 0.6;
+            padding: 4px;
+        }
+
+        .notice-delete:hover { opacity: 1; }
+
+        .month-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .month-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .current-month {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .prayer-item {
+            background: var(--bg-warm);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--accent);
+            position: relative;
+        }
+
+        .prayer-author { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; }
+        .prayer-content { font-size: 0.95rem; line-height: 1.6; }
+        .prayer-date { font-size: 0.75rem; color: var(--text-light); margin-top: 8px; text-align: right; }
+
+        .prayer-actions {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .prayer-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            opacity: 0.5;
+            font-size: 1rem;
+        }
+
+        .prayer-actions button:hover { opacity: 1; }
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+
+        .calendar-day-name { font-size: 0.75rem; color: var(--text-light); padding: 8px 0; }
+        .calendar-day-name:first-child { color: var(--danger); }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .calendar-day:hover { background: var(--bg-warm); }
+        .calendar-day.today { background: var(--primary); color: white; }
+        .calendar-day.selected { background: #4caf50; color: white; }
+        .calendar-day.other-month { opacity: 0.3; cursor: pointer; }
+        .calendar-day.other-month:hover { opacity: 0.6; background: var(--bg-warm); }
+        .calendar-day.sunday { color: var(--danger); }
+        .calendar-day.today.sunday, .calendar-day.selected.sunday { color: white; }
+
+        /* 일정 있는 날 - 빨간 점 */
+        .calendar-day.has-event::after {
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            width: 8px;
+            height: 8px;
+            background: #e74c3c;
+            border-radius: 50%;
+            box-shadow: 0 0 4px #e74c3c;
+        }
+
+        .calendar-day.today.has-event::after,
+        .calendar-day.selected.has-event::after { 
+            background: #ffeb3b;
+            box-shadow: 0 0 4px #ffeb3b;
+        }
+
+        .selected-date-info {
+            background: var(--bg-warm);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+
+        .selected-date-title { font-weight: 600; color: var(--primary); margin-bottom: 12px; }
+
+        .schedule-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-warm);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            align-items: flex-start;
+        }
+
+        .schedule-date { min-width: 50px; text-align: center; }
+        .schedule-day { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .schedule-weekday { font-size: 0.75rem; color: var(--text-light); }
+        .schedule-info { flex: 1; min-width: 0; }
+        
+        .schedule-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .schedule-title { 
+            font-weight: 500; 
+            margin-bottom: 4px; 
+            flex: 1;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .schedule-time { font-size: 0.85rem; color: var(--text-secondary); }
+
+        .schedule-item-btns {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .schedule-item-btns button {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            background: white;
+        }
+
+        .schedule-item-btns .edit-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .schedule-item-btns .delete-btn:hover {
+            background: #ffebee;
+        }
+
+        .schedule-search {
+            margin-bottom: 12px;
+        }
+
+        .schedule-search .form-input {
+            background: var(--bg-warm);
+            border: 1px solid var(--border);
+        }
+
+        .auto-link {
+            color: var(--primary);
+            text-decoration: underline;
+            word-break: break-all;
+        }
+
+        .auto-link:hover {
+            color: var(--accent);
+        }
+
+        .dept-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .dept-manage-btn {
+            padding: 6px 12px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        .dept-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .dept-tab {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            background: var(--bg-warm);
+            border: none;
+            border-radius: 20px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+
+        .dept-tab.active { background: var(--primary); color: white; }
+
+        .dept-post {
+            background: var(--bg-warm);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+        }
+
+        .dept-post.locked { border: 2px solid var(--accent); }
+
+        .dept-post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .dept-post-title { font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+        .dept-post-date { font-size: 0.8rem; color: var(--text-light); }
+        .dept-post-preview { font-size: 0.9rem; color: var(--text-secondary); }
+
+        .lock-icon { color: var(--accent); }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .form-textarea { min-height: 100px; resize: vertical; }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-warm);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .form-checkbox input { width: 18px; height: 18px; }
+
+        .password-field {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: #fff8e6;
+            border-radius: 10px;
+            border: 1px solid var(--accent);
+        }
+
+        .password-field.active { display: block; }
+
+        .password-field label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .password-field input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-block { width: 100%; }
+        .btn-group { display: flex; gap: 8px; }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            box-shadow: 0 -2px 20px var(--shadow);
+            border-top: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            color: var(--text-light);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 1.4rem; }
+        .nav-text { font-size: 0.65rem; font-weight: 500; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+        }
+
+        .modal-title {
+            font-family: 'Nanum Myeongjo', serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: var(--danger);
+            border: none;
+            font-size: 1.2rem;
+            color: white;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: 8px;
+        }
+
+        .modal-body { padding: 20px; }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 1rem;
+            opacity: 0.6;
+        }
+
+        .delete-btn:hover { opacity: 1; }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+        .icon-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-top: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .icon-option {
+            padding: 8px;
+            font-size: 1.3rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            background: white;
+        }
+
+        .icon-option:hover { border-color: var(--primary); }
+        .icon-option.selected { background: var(--primary); border-color: var(--primary); }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary-dark);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            z-index: 300;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show { opacity: 1; }
+
+        .comments-section {
+            margin-top: 20px;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        .comments-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .comment-item {
+            background: var(--bg-warm);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .comment-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .comment-author { font-size: 0.85rem; font-weight: 500; color: var(--primary); }
+        .comment-date { font-size: 0.75rem; color: var(--text-light); }
+        .comment-content { font-size: 0.9rem; line-height: 1.5; }
+
+        .comment-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .comment-form {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .comment-form input[type="text"]:first-child { width: 80px; flex-shrink: 0; }
+
+        .comment-form input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .comment-form button {
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .selected-schedule-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-warm);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+
+        .selected-schedule-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .schedule-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .schedule-actions button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .schedule-actions button:hover {
+            transform: scale(1.1);
+        }
+
+        .schedule-actions .edit-btn:hover {
+            background: var(--primary-light);
+        }
+
+        .schedule-actions .delete-btn:hover {
+            background: #ffebee;
+        }
+
+        .schedule-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .schedule-time {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .auto-resize {
+            min-height: 60px;
+            max-height: 200px;
+            resize: none;
+            overflow-y: auto;
+        }
+
+        .mt-16 { margin-top: 16px; }
+        .mb-16 { margin-bottom: 16px; }
+
+        .password-prompt { text-align: center; padding: 20px; }
+        .password-prompt .lock-big { font-size: 3rem; margin-bottom: 16px; }
+        .password-prompt p { color: var(--text-secondary); margin-bottom: 16px; }
+
+        .password-prompt input {
+            width: 100%;
+            max-width: 200px;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .password-error { color: var(--danger); font-size: 0.9rem; margin-bottom: 12px; display: none; }
+        .password-error.show { display: block; }
+
+        .quick-add-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .dept-manage-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg-warm);
+            border-radius: 10px;
+            margin-bottom: 8px;
+        }
+
+        .dept-manage-info { display: flex; align-items: center; gap: 10px; }
+        .dept-manage-icon { font-size: 1.5rem; }
+        .dept-manage-name { font-weight: 500; }
+        .dept-manage-actions { display: flex; gap: 8px; }
+
+        .dept-manage-actions button {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .dept-edit-btn { background: var(--primary); color: white; }
+        .dept-delete-btn { background: var(--danger); color: white; }
+
+        .admin-panel {
+            display: none;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border: 2px solid var(--accent);
+        }
+
+        .admin-panel.show { display: block; }
+
+        .admin-title { font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; }
+
+        .admin-toggle-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 12px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .calendar-legend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .legend-dot.event { background: #e74c3c; }
+        .legend-dot.today { background: var(--primary); }
+
+        .verse-manage-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            font-size: 1rem;
+            cursor: pointer;
+            color: white;
+        }
+
+        .verse-manage-btn:hover { background: rgba(255,255,255,0.3); }
+
+        .verse-input-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .verse-day {
+            min-width: 40px;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .verse-input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .verse-input-group input:first-of-type { flex: 2; }
+
+        .verse-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .verse-quick-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .verse-quick-actions button {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-warm);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .verse-quick-actions button:hover { background: var(--border); }
+
+        .verse-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .verse-tab {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-warm);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .verse-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .verse-tab-content {
+            display: none;
+        }
+
+        .verse-tab-content.active {
+            display: block;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--bg-warm);
+        }
+
+        .upload-area .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .divider-text {
+            text-align: center;
+            color: var(--text-light);
+            margin: 16px 0;
+            position: relative;
+        }
+
+        .divider-text::before,
+        .divider-text::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .divider-text::before { left: 0; }
+        .divider-text::after { right: 0; }
+
+        .parse-result {
+            background: var(--bg-warm);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        .parse-result.success { border-left: 4px solid var(--success); }
+        .parse-result.error { border-left: 4px solid var(--danger); }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="connection-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">연결 중...</span>
+            </div>
+            <h1 class="church-name">서서울성서침례교회</h1>
+            <p class="church-subtitle">West Seoul Bible Baptist Church</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section id="home" class="section active">
+            <div class="card welcome-card" style="position:relative;">
+                <button class="verse-manage-btn" onclick="openVerseModal()">⚙️</button>
+                <h2 class="card-title">✝️ 오늘의 말씀</h2>
+                <p class="daily-verse" id="dailyVerse">"항상 기뻐하라 쉬지 말고 기도하라 범사에 감사하라"</p>
+                <p class="verse-reference" id="verseReference">데살로니가전서 5:16-18</p>
+            </div>
+            <div class="card">
+                <div class="card-header-with-btn">
+                    <h3 class="card-title">⭐ 즐겨찾기</h3>
+                    <button class="card-manage-btn" onclick="openLinkManageModal()">⚙️ 관리</button>
+                </div>
+                <div class="quick-links" id="quickLinks"></div>
+            </div>
+            <div class="card">
+                <h3 class="card-title">📢 최근 공지</h3>
+                <div id="recentNotices"></div>
+            </div>
+        </section>
+
+        <section id="notice" class="section">
+            <div class="card">
+                <h3 class="card-title">📢 공지사항</h3>
+                <button class="admin-toggle-btn" onclick="togglePanel('noticeAdminPanel', this)">➕ 공지 등록하기</button>
+                <div class="admin-panel" id="noticeAdminPanel">
+                    <h4 class="admin-title">⚙️ 공지 등록</h4>
+                    <div class="form-group">
+                        <label class="form-label">제목</label>
+                        <input type="text" class="form-input" id="noticeTitle" placeholder="공지 제목">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">내용</label>
+                        <textarea class="form-textarea" id="noticeContent" placeholder="공지 내용"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" id="noticeImportant"> 중요 공지</label>
+                    </div>
+                    <button class="btn btn-primary btn-block" onclick="addNotice()">공지 등록</button>
+                </div>
+                <div id="noticeList"></div>
+            </div>
+        </section>
+
+        <section id="prayer" class="section">
+            <div class="card">
+                <h3 class="card-title">🙏 기도제목</h3>
+                <div class="month-selector">
+                    <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+                    <span class="current-month" id="currentMonth"></span>
+                    <button class="month-btn" onclick="changeMonth(1)">›</button>
+                </div>
+                <button class="btn btn-primary btn-block mb-16" onclick="openPrayerModal()">✏️ 기도제목 올리기</button>
+                <div id="prayerList"></div>
+            </div>
+        </section>
+
+        <section id="thanks" class="section">
+            <div class="card">
+                <h3 class="card-title">💝 감사제목</h3>
+                <div class="month-selector">
+                    <button class="month-btn" onclick="changeThanksMonth(-1)">‹</button>
+                    <span class="current-month" id="currentThanksMonth"></span>
+                    <button class="month-btn" onclick="changeThanksMonth(1)">›</button>
+                </div>
+                <button class="btn btn-primary btn-block mb-16" onclick="openThanksModal()">✏️ 감사제목 올리기</button>
+                <div id="thanksList"></div>
+            </div>
+        </section>
+
+        <section id="schedule" class="section">
+            <div class="card">
+                <div class="calendar-header">
+                    <button class="month-btn" onclick="changeCalendarMonth(-1)">‹</button>
+                    <span class="current-month" id="calendarMonth"></span>
+                    <button class="month-btn" onclick="changeCalendarMonth(1)">›</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+                <div class="calendar-legend">
+                    <div class="legend-item"><span class="legend-dot today"></span> 오늘</div>
+                    <div class="legend-item"><span class="legend-dot event"></span> 일정 있음</div>
+                </div>
+                <div class="selected-date-info" id="selectedDateInfo" style="display:none;">
+                    <div class="selected-date-title" id="selectedDateTitle"></div>
+                    <div id="selectedDateSchedules"></div>
+                    <button class="quick-add-btn" onclick="openQuickScheduleModal()">➕ 이 날짜에 일정 추가</button>
+                </div>
+                <h4 class="card-title mt-16">📋 이번 달 일정</h4>
+                <div class="schedule-search">
+                    <input type="text" class="form-input" id="scheduleSearchInput" placeholder="🔍 일정 검색..." oninput="searchSchedules()">
+                </div>
+                <div id="monthSchedules"></div>
+            </div>
+        </section>
+
+        <section id="department" class="section">
             <div class="card">
                 <div class="dept-header">
                     <h3 class="card-title" style="margin-bottom:0;">👥 부서 게시판</h3>
@@ -35,33 +1343,1591 @@
                 <div id="deptContents"></div>
             </div>
         </section>
+    </main>
 
-        <section id="stats" class="section">
-            <div class="card">
-                <h3 class="card-title">📊 사용 통계</h3>
-                
-                <div class="stats-summary">
-                    <div class="stat-card">
-                        <div class="stat-icon">👥</div>
-                        <div class="stat-value" id="totalVisits">0</div>
-                        <div class="stat-label">총 방문 횟수</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">📅</div>
-                        <div class="stat-value" id="todayVisits">0</div>
-                        <div class="stat-label">오늘 방문</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">⏰</div>
-                        <div class="stat-value" id="lastVisitTime">-</div>
-                        <div class="stat-label">마지막 접속</div>
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="showSection('notice', this)"><span class="nav-icon">📢</span><span class="nav-text">공지</span></button>
+        <button class="nav-item" onclick="showSection('schedule', this)"><span class="nav-icon">📅</span><span class="nav-text">일정</span></button>
+        <button class="nav-item active" onclick="showSection('home', this)"><span class="nav-icon">🏠</span><span class="nav-text">홈</span></button>
+        <button class="nav-item" onclick="showSection('prayer', this)"><span class="nav-icon">🙏</span><span class="nav-text">기도</span></button>
+        <button class="nav-item" onclick="showSection('thanks', this)"><span class="nav-icon">💝</span><span class="nav-text">감사</span></button>
+        <button class="nav-item" onclick="showSection('department', this)"><span class="nav-icon">👥</span><span class="nav-text">부서</span></button>
+    </nav>
+
+    <!-- 모달들 -->
+    <div class="modal-overlay" id="prayerModal" onclick="if(event.target===this)closeModal('prayerModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="prayerModalTitle">기도제목 올리기</h3>
+                <button class="modal-close" onclick="closeModal('prayerModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="prayerEditId">
+                <div class="form-group">
+                    <label class="form-label">이름</label>
+                    <input type="text" class="form-input" id="prayerAuthor" placeholder="익명 가능">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">기도제목</label>
+                    <textarea class="form-textarea" id="prayerContent" placeholder="기도제목을 나눠주세요"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="savePrayer()">등록하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="thanksModal" onclick="if(event.target===this)closeModal('thanksModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="thanksModalTitle">감사제목 올리기</h3>
+                <button class="modal-close" onclick="closeModal('thanksModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="thanksEditId">
+                <div class="form-group">
+                    <label class="form-label">이름</label>
+                    <input type="text" class="form-input" id="thanksAuthor" placeholder="익명 가능">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">감사제목</label>
+                    <textarea class="form-textarea" id="thanksContent" placeholder="감사한 일을 나눠주세요"></textarea>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveThanks()">등록하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="noticeModal" onclick="if(event.target===this)closeModal('noticeModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="noticeModalTitle"></h3>
+                <button class="modal-close" onclick="closeModal('noticeModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="notice-date mb-16" id="noticeModalDate"></p>
+                <div id="noticeModalContent" style="line-height: 1.8; white-space: pre-wrap;"></div>
+                <div class="comments-section">
+                    <h4 class="comments-title">💬 댓글 <span id="commentCount"></span></h4>
+                    <div id="noticeComments"></div>
+                    <div class="comment-form">
+                        <input type="text" id="commentAuthor" placeholder="이름">
+                        <input type="text" id="commentContent" placeholder="댓글 입력">
+                        <button onclick="addComment()">등록</button>
                     </div>
                 </div>
-
-                <h4 class="card-title mt-16">📈 일별 방문 추이 (최근 7일)</h4>
-                <div class="daily-chart" id="dailyChart"></div>
-
-                <h4 class="card-title mt-16">🎯 섹션별 조회수</h4>
-                <div class="section-stats" id="sectionStats"></div>
             </div>
-        </section>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="linkModal" onclick="if(event.target===this)closeModal('linkModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="linkModalTitle">즐겨찾기 추가</h3>
+                <button class="modal-close" onclick="closeModal('linkModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="linkEditId">
+                <div class="form-group">
+                    <label class="form-label">이름</label>
+                    <input type="text" class="form-input" id="linkName" placeholder="예: 교회 카페">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">URL</label>
+                    <input type="url" class="form-input" id="linkUrl" placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">아이콘 선택</label>
+                    <div class="icon-picker" id="iconPicker"></div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" style="flex:1" onclick="saveLink()">저장</button>
+                    <button class="btn btn-danger" id="deleteLinkBtn" style="display:none" onclick="deleteLink()">삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="linkOrderModal" onclick="if(event.target===this)closeModal('linkOrderModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙️ 즐겨찾기 관리</h3>
+                <button class="modal-close" onclick="closeModal('linkOrderModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <button class="btn btn-primary btn-block mb-16" onclick="closeModal('linkOrderModal');openLinkModal();">➕ 새 즐겨찾기 추가</button>
+                <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:12px; text-align:center;">
+                    ☰ 드래그하여 순서 변경
+                </p>
+                <div id="linkOrderList" class="link-order-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deptManageModal" onclick="if(event.target===this)closeModal('deptManageModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙️ 부서 관리</h3>
+                <button class="modal-close" onclick="closeModal('deptManageModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <button class="btn btn-primary btn-block mb-16" onclick="openDeptAddModal()">➕ 새 부서 추가</button>
+                <div id="deptManageList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deptModal" onclick="if(event.target===this)closeModal('deptModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="deptModalTitle">부서 추가</h3>
+                <button class="modal-close" onclick="closeModal('deptModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="deptEditId">
+                <div class="form-group">
+                    <label class="form-label">부서 이름</label>
+                    <input type="text" class="form-input" id="deptName" placeholder="예: 청년부">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">아이콘 선택</label>
+                    <div class="icon-picker" id="deptIconPicker"></div>
+                </div>
+                <button class="btn btn-primary btn-block" onclick="saveDept()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deptPostModal" onclick="if(event.target===this)closeModal('deptPostModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="deptPostModalTitle"></h3>
+                <button class="modal-close" onclick="closeModal('deptPostModal')">✕</button>
+            </div>
+            <div class="modal-body" id="deptPostModalBody"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="passwordModal" onclick="if(event.target===this)closeModal('passwordModal')">
+        <div class="modal" style="max-width: 350px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🔒 비밀글</h3>
+                <button class="modal-close" onclick="closeModal('passwordModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="password-prompt">
+                    <div class="lock-big">🔐</div>
+                    <p>비밀번호가 필요합니다</p>
+                    <input type="password" id="passwordInput" placeholder="비밀번호" onkeypress="if(event.key==='Enter')checkPassword()">
+                    <p class="password-error" id="passwordError">비밀번호가 틀렸습니다</p>
+                    <button class="btn btn-primary btn-block" onclick="checkPassword()">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="quickScheduleModal" onclick="if(event.target===this)closeModal('quickScheduleModal')">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="quickScheduleTitle">📅 일정 등록</h3>
+                <button class="modal-close" onclick="closeModal('quickScheduleModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="scheduleEditId">
+                <div class="form-group" id="scheduleDateGroup" style="display:none;">
+                    <label class="form-label">📆 날짜</label>
+                    <input type="date" class="form-input" id="quickScheduleDate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">제목</label>
+                    <textarea class="form-input auto-resize" id="quickScheduleInput" placeholder="일정 내용을 입력하세요" rows="2" oninput="autoResize(this)"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">시간 (선택)</label>
+                    <input type="text" class="form-input" id="quickScheduleTime" placeholder="예: 오전 11시">
+                </div>
+                <button class="btn btn-primary btn-block" id="scheduleSubmitBtn" onclick="saveQuickSchedule()">등록</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="verseModal" onclick="if(event.target===this)closeModal('verseModal')">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📖 오늘의 말씀 관리</h3>
+                <button class="modal-close" onclick="closeModal('verseModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- 탭 메뉴 -->
+                <div class="verse-tabs">
+                    <button class="verse-tab active" onclick="switchVerseTab('upload')">📁 파일/텍스트 업로드</button>
+                    <button class="verse-tab" onclick="switchVerseTab('manual')">✏️ 직접 입력</button>
+                </div>
+
+                <!-- 업로드 탭 -->
+                <div id="verseUploadTab" class="verse-tab-content active">
+                    <p style="color:var(--text-secondary); margin-bottom: 16px; font-size: 0.9rem;">
+                        📌 Word 파일(.docx), 텍스트 파일(.txt)을 업로드하거나 텍스트를 직접 붙여넣으세요.
+                    </p>
+                    
+                    <div class="upload-area" onclick="document.getElementById('verseFileInput').click()">
+                        <input type="file" id="verseFileInput" accept=".docx,.txt" style="display:none" onchange="handleVerseFile(this)">
+                        <div class="upload-icon">📄</div>
+                        <p>파일을 선택하거나 여기에 드래그하세요</p>
+                        <p style="font-size:0.8rem; color:var(--text-light)">.docx, .txt 파일 지원</p>
+                    </div>
+
+                    <div class="divider-text">또는 텍스트 붙여넣기</div>
+
+                    <textarea id="verseTextArea" class="form-textarea" style="min-height:200px;" placeholder="예시:
+1월 1일 목요일
+시편 90:12 우리에게 우리 날 계수함을 가르치사 지혜로운 마음을 얻게 하소서
+1월 2일 금요일
+마태복음 6:33 그런즉 너희는 먼저 그의 나라와 그의 의를 구하라..."></textarea>
+                    
+                    <button class="btn btn-primary btn-block mt-16" onclick="parseAndSaveVerses()">📥 말씀 불러오기</button>
+                </div>
+
+                <!-- 직접 입력 탭 -->
+                <div id="verseManualTab" class="verse-tab-content">
+                    <div class="verse-quick-actions">
+                        <button onclick="clearAllVerses()">🗑️ 전체 삭제</button>
+                        <button onclick="loadSampleVerses()">📝 샘플 불러오기</button>
+                    </div>
+                    <div class="verse-list-container" id="verseListContainer"></div>
+                    <button class="btn btn-primary btn-block mt-16" onclick="saveAllVerses()">💾 저장하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ========== 전역 변수 ==========
+        var db = null;
+        var currentPrayerMonth = new Date();
+        var currentCalendarMonth = new Date();
+        var selectedDate = null;
+        var currentDept = null;
+        var selectedIcon = '🔗';
+        var selectedDeptIcon = '👔';
+        var currentNoticeId = null;
+        var pendingPost = null;
+
+        var notices = [];
+        var prayers = [];
+        var thanks = [];
+        var schedules = [];
+        var links = [];
+        var departments = [];
+        var deptPosts = {};
+        var comments = {};
+        var dailyVerses = {};
+        var currentThanksMonth = new Date();
+
+        var linkIcons = ['✝️', '⛪', '🙏', '📖', '🕊️', '👼', '🔔', '🕯️', '💒', '✨', '🌟', '❤️', '💝', '🤝', '🌈', '🌾', '🍞', '🐑', '🐟', '⭐', '🌅', '💡', '🛐', '👨‍👩‍👧‍👦', '🙌', '📺', '🎵', '🎬', '📷', '🎧', '💬', '📧', '☎️', '💌', '🌐', '☕', '🍽️', '🛒', '💰', '🎁', '🏠', '🏢', '📍', '🚗', '✈️', '📱', '💻', '🔍', '📝', '✏️', '📚', '🗂️', '⚙️', '🎯', '🔗'];
+        var deptIcons = ['👔', '👗', '🌟', '🎓', '🧒', '🎵', '📚', '🎺', '🎹', '👨‍👩‍👧', '👴', '👵', '💒', '✝️', '📖', '🙏'];
+
+        var verses = [
+            { text: "항상 기뻐하라 쉬지 말고 기도하라 범사에 감사하라", reference: "데살로니가전서 5:16-18" },
+            { text: "여호와는 나의 목자시니 내게 부족함이 없으리로다", reference: "시편 23:1" },
+            { text: "두려워하지 말라 내가 너와 함께 함이라", reference: "이사야 41:10" }
+        ];
+
+        // ========== Firebase 초기화 ==========
+        var firebaseConfig = {
+            apiKey: "AIzaSyA7zoDte4aKn8IJXpkmYYSL9hHWlrQlp-c",
+            authDomain: "church-app-cce2f.firebaseapp.com",
+            databaseURL: "https://church-app-cce2f-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "church-app-cce2f"
+        };
+
+        // Firebase 즉시 초기화
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            console.log('Firebase 초기화 성공');
+        } catch(e) {
+            console.error('Firebase 초기화 실패:', e);
+        }
+
+        // ========== 페이지 로드 시 실행 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM 로드 완료');
+            
+            if (db) {
+                // 연결 상태 확인
+                db.ref('.info/connected').on('value', function(snap) {
+                    var connected = snap.val() === true;
+                    document.getElementById('statusDot').className = 'status-dot' + (connected ? ' connected' : '');
+                    document.getElementById('statusText').textContent = connected ? '실시간 연결됨' : '오프라인';
+                });
+
+                // 데이터 리스너 설정
+                setupListeners();
+            } else {
+                document.getElementById('statusText').textContent = '연결 실패';
+            }
+
+            // UI 초기화
+            initIconPickers();
+            setDailyVerse();
+        });
+
+        // ========== 데이터 리스너 ==========
+        function setupListeners() {
+            // 공지
+            db.ref('notices').on('value', function(snap) {
+                notices = [];
+                snap.forEach(function(c) { notices.unshift({ id: c.key, ...c.val() }); });
+                renderNotices();
+                renderRecentNotices();
+            });
+
+            // 기도제목
+            db.ref('prayers').on('value', function(snap) {
+                prayers = [];
+                snap.forEach(function(c) { prayers.unshift({ id: c.key, ...c.val() }); });
+                renderPrayers();
+            });
+
+            // 감사제목
+            db.ref('thanks').on('value', function(snap) {
+                thanks = [];
+                snap.forEach(function(c) { thanks.unshift({ id: c.key, ...c.val() }); });
+                renderThanks();
+            });
+
+            // 일정
+            db.ref('schedules').on('value', function(snap) {
+                schedules = [];
+                snap.forEach(function(c) { schedules.push({ id: c.key, ...c.val() }); });
+                console.log('일정 로드:', schedules.length);
+                renderCalendar();
+                renderSchedules();
+                if (selectedDate) showSelectedDateSchedules();
+            });
+
+            // 즐겨찾기
+            db.ref('links').on('value', function(snap) {
+                links = [];
+                snap.forEach(function(c) { links.push({ id: c.key, ...c.val() }); });
+                console.log('즐겨찾기 로드:', links.length);
+                renderQuickLinks();
+            });
+
+            // 부서
+            db.ref('departments').on('value', function(snap) {
+                departments = [];
+                snap.forEach(function(c) { departments.push({ id: c.key, ...c.val() }); });
+                departments.sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
+                console.log('부서 로드:', departments.length, departments);
+                
+                if (departments.length > 0 && (!currentDept || !departments.find(function(d) { return d.id === currentDept; }))) {
+                    currentDept = departments[0].id;
+                }
+                if (departments.length === 0) currentDept = null;
+                
+                renderDeptTabs();
+                updateDeptSelect();
+                renderDeptPosts();
+            });
+
+            // 부서 게시글
+            db.ref('deptPosts').on('value', function(snap) {
+                deptPosts = {};
+                snap.forEach(function(dept) {
+                    deptPosts[dept.key] = [];
+                    dept.forEach(function(post) {
+                        deptPosts[dept.key].unshift({ id: post.key, ...post.val() });
+                    });
+                });
+                renderDeptPosts();
+            });
+
+            // 댓글
+            db.ref('comments').on('value', function(snap) {
+                comments = {};
+                snap.forEach(function(c) {
+                    comments[c.key] = [];
+                    c.forEach(function(comment) {
+                        comments[c.key].push({ id: comment.key, ...comment.val() });
+                    });
+                });
+                if (currentNoticeId) renderComments(currentNoticeId);
+            });
+
+            // 오늘의 말씀
+            db.ref('dailyVerses').on('value', function(snap) {
+                dailyVerses = {};
+                snap.forEach(function(c) {
+                    dailyVerses[c.key] = c.val();
+                });
+                console.log('말씀 로드:', Object.keys(dailyVerses).length + '개');
+                displayTodayVerse();
+            });
+        }
+
+        // ========== 유틸리티 ==========
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        
+        function showSection(id, btn) {
+            document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+            if (btn) btn.classList.add('active');
+        }
+
+        function togglePanel(panelId, btn) {
+            var panel = document.getElementById(panelId);
+            panel.classList.toggle('show');
+            btn.textContent = panel.classList.contains('show') ? '✕ 닫기' : '➕ ' + (panelId === 'noticeAdminPanel' ? '공지 등록하기' : '게시글 등록하기');
+        }
+
+        function showToast(msg) {
+            var t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 2000);
+        }
+
+        function formatDate(str) {
+            if (!str) return '';
+            var d = new Date(str);
+            return (d.getMonth()+1) + '/' + d.getDate();
+        }
+
+        function formatDateTime(str) {
+            if (!str) return '';
+            var d = new Date(str);
+            return d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일';
+        }
+
+        function linkify(text) {
+            if (!text) return '';
+            // URL 패턴 감지 (http, https, www)
+            var urlPattern = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
+            return text.replace(urlPattern, function(url) {
+                var href = url;
+                if (url.indexOf('http') !== 0) {
+                    href = 'https://' + url;
+                }
+                return '<a href="' + href + '" target="_blank" class="auto-link">' + url + '</a>';
+            });
+        }
+
+        function setDailyVerse() {
+            // Firebase에서 로드된 말씀이 있으면 그것을 사용
+            displayTodayVerse();
+        }
+
+        function displayTodayVerse() {
+            var today = new Date().getDate();
+            var verse = dailyVerses[today];
+            
+            if (verse && verse.text) {
+                document.getElementById('dailyVerse').textContent = '"' + verse.text + '"';
+                document.getElementById('verseReference').textContent = verse.reference || '';
+            } else {
+                // 기본 말씀 (Firebase에 데이터가 없을 때)
+                var defaultVerses = [
+                    { text: "항상 기뻐하라 쉬지 말고 기도하라 범사에 감사하라", reference: "데살로니가전서 5:16-18" },
+                    { text: "여호와는 나의 목자시니 내게 부족함이 없으리로다", reference: "시편 23:1" },
+                    { text: "두려워하지 말라 내가 너와 함께 함이라", reference: "이사야 41:10" }
+                ];
+                var idx = today % defaultVerses.length;
+                document.getElementById('dailyVerse').textContent = '"' + defaultVerses[idx].text + '"';
+                document.getElementById('verseReference').textContent = defaultVerses[idx].reference;
+            }
+        }
+
+        function openVerseModal() {
+            renderVerseInputs();
+            openModal('verseModal');
+        }
+
+        function switchVerseTab(tab) {
+            document.querySelectorAll('.verse-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.verse-tab-content').forEach(function(c) { c.classList.remove('active'); });
+            
+            if (tab === 'upload') {
+                document.querySelector('.verse-tab:first-child').classList.add('active');
+                document.getElementById('verseUploadTab').classList.add('active');
+            } else {
+                document.querySelector('.verse-tab:last-child').classList.add('active');
+                document.getElementById('verseManualTab').classList.add('active');
+                renderVerseInputs();
+            }
+        }
+
+        function handleVerseFile(input) {
+            var file = input.files[0];
+            if (!file) return;
+
+            var fileName = file.name.toLowerCase();
+            
+            if (fileName.endsWith('.docx')) {
+                // Word 파일 처리
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    mammoth.extractRawText({ arrayBuffer: e.target.result })
+                        .then(function(result) {
+                            document.getElementById('verseTextArea').value = result.value;
+                            showToast('파일을 불러왔습니다. "말씀 불러오기" 버튼을 눌러주세요.');
+                        })
+                        .catch(function(err) {
+                            console.error('docx 파싱 에러:', err);
+                            showToast('파일 읽기 실패');
+                        });
+                };
+                reader.readAsArrayBuffer(file);
+            } else if (fileName.endsWith('.txt')) {
+                // 텍스트 파일 처리
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('verseTextArea').value = e.target.result;
+                    showToast('파일을 불러왔습니다. "말씀 불러오기" 버튼을 눌러주세요.');
+                };
+                reader.readAsText(file, 'UTF-8');
+            } else {
+                showToast('지원하지 않는 파일 형식입니다');
+            }
+        }
+
+        function parseAndSaveVerses() {
+            var text = document.getElementById('verseTextArea').value.trim();
+            if (!text) {
+                showToast('텍스트를 입력하거나 파일을 업로드해주세요');
+                return;
+            }
+
+            var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l; });
+            var parsedVerses = {};
+            var currentDay = null;
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                
+                // 날짜 패턴 찾기: "1월 1일", "1일", "01일" 등
+                var dayMatch = line.match(/(\d{1,2})월\s*(\d{1,2})일/) || line.match(/^(\d{1,2})일/);
+                
+                if (dayMatch) {
+                    // 날짜 줄 발견
+                    currentDay = parseInt(dayMatch[dayMatch.length - 1]);
+                } else if (currentDay && line.length > 5) {
+                    // 말씀 줄 (날짜가 설정된 상태에서 충분히 긴 텍스트)
+                    // 출처와 내용 분리: "시편 90:12 우리에게..." 또는 "마태복음 6:33 그런즉..."
+                    var verseMatch = line.match(/^([가-힣]+\s*\d+:\d+[-\d]*)\s+(.+)$/);
+                    
+                    if (verseMatch) {
+                        parsedVerses[currentDay] = {
+                            reference: verseMatch[1],
+                            text: verseMatch[2]
+                        };
+                    } else {
+                        // 출처 패턴이 다를 경우 전체를 텍스트로
+                        parsedVerses[currentDay] = {
+                            reference: '',
+                            text: line
+                        };
+                    }
+                    currentDay = null; // 다음 날짜를 기다림
+                }
+            }
+
+            var count = Object.keys(parsedVerses).length;
+            
+            if (count === 0) {
+                showToast('말씀을 찾을 수 없습니다. 형식을 확인해주세요.');
+                return;
+            }
+
+            // Firebase에 저장
+            if (!db) {
+                showToast('데이터베이스 연결 실패');
+                return;
+            }
+
+            db.ref('dailyVerses').set(parsedVerses).then(function() {
+                showToast(count + '개 말씀이 저장되었습니다!');
+                document.getElementById('verseTextArea').value = '';
+                closeModal('verseModal');
+            }).catch(function(e) {
+                console.error('저장 실패:', e);
+                showToast('저장 실패');
+            });
+        }
+
+        function renderVerseInputs() {
+            var container = document.getElementById('verseListContainer');
+            var html = '';
+            
+            for (var day = 1; day <= 31; day++) {
+                var verse = dailyVerses[day] || { text: '', reference: '' };
+                html += '<div class="verse-input-group">';
+                html += '<span class="verse-day">' + day + '일</span>';
+                html += '<input type="text" id="verseText' + day + '" placeholder="말씀 내용" value="' + (verse.text || '').replace(/"/g, '&quot;') + '">';
+                html += '<input type="text" id="verseRef' + day + '" placeholder="출처" value="' + (verse.reference || '').replace(/"/g, '&quot;') + '" style="flex:1;">';
+                html += '</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function saveAllVerses() {
+            if (!db) { showToast('연결 실패'); return; }
+            
+            var versesToSave = {};
+            var count = 0;
+            
+            for (var day = 1; day <= 31; day++) {
+                var text = document.getElementById('verseText' + day).value.trim();
+                var reference = document.getElementById('verseRef' + day).value.trim();
+                
+                if (text) {
+                    versesToSave[day] = { text: text, reference: reference };
+                    count++;
+                }
+            }
+            
+            db.ref('dailyVerses').set(versesToSave).then(function() {
+                showToast(count + '개 말씀이 저장되었습니다');
+                closeModal('verseModal');
+            }).catch(function(e) {
+                console.error('저장 실패:', e);
+                showToast('저장 실패');
+            });
+        }
+
+        function clearAllVerses() {
+            if (!confirm('모든 말씀을 삭제하시겠습니까?')) return;
+            
+            for (var day = 1; day <= 31; day++) {
+                document.getElementById('verseText' + day).value = '';
+                document.getElementById('verseRef' + day).value = '';
+            }
+            showToast('입력란이 초기화되었습니다');
+        }
+
+        function loadSampleVerses() {
+            var samples = [
+                { text: "항상 기뻐하라 쉬지 말고 기도하라 범사에 감사하라", reference: "데살로니가전서 5:16-18" },
+                { text: "여호와는 나의 목자시니 내게 부족함이 없으리로다", reference: "시편 23:1" },
+                { text: "두려워하지 말라 내가 너와 함께 함이라", reference: "이사야 41:10" },
+                { text: "너희 염려를 다 주께 맡기라 이는 그가 너희를 돌보심이라", reference: "베드로전서 5:7" },
+                { text: "내가 너를 강하게 하리라 참으로 너를 도와주리라", reference: "이사야 41:10" },
+                { text: "주는 나의 빛이요 나의 구원이시니 내가 누구를 두려워하리요", reference: "시편 27:1" },
+                { text: "하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니", reference: "요한복음 3:16" },
+                { text: "내가 진실로 너희에게 이르노니 무엇이든지 기도하고 구하는 것은 받은 줄로 믿으라", reference: "마가복음 11:24" },
+                { text: "범사에 감사하라 이것이 그리스도 예수 안에서 너희를 향하신 하나님의 뜻이니라", reference: "데살로니가전서 5:18" },
+                { text: "나의 하나님이 그리스도 예수 안에서 영광 가운데 그 풍성한 대로 너희 모든 쓸 것을 채우시리라", reference: "빌립보서 4:19" },
+                { text: "주를 앙망하는 자는 새 힘을 얻으리니 독수리가 날개치며 올라감 같을 것이요", reference: "이사야 40:31" },
+                { text: "여호와를 기뻐하라 그가 네 마음의 소원을 네게 이루어 주시리로다", reference: "시편 37:4" },
+                { text: "이르시되 내 은혜가 네게 족하도다 이는 내 능력이 약한 데서 온전하여짐이라", reference: "고린도후서 12:9" },
+                { text: "평안을 너희에게 끼치노니 곧 나의 평안을 너희에게 주노라", reference: "요한복음 14:27" },
+                { text: "내가 너희에게 분부한 것을 가르쳐 지키게 하라 볼지어다 내가 세상 끝날까지 너희와 항상 함께 있으리라", reference: "마태복음 28:20" },
+                { text: "오직 성령의 열매는 사랑과 희락과 화평과 오래 참음과 자비와 양선과 충성과 온유와 절제니", reference: "갈라디아서 5:22-23" },
+                { text: "너희는 세상의 빛이라 산 위에 있는 동네가 숨겨지지 못할 것이요", reference: "마태복음 5:14" },
+                { text: "믿음은 바라는 것들의 실상이요 보이지 않는 것들의 증거니", reference: "히브리서 11:1" },
+                { text: "네 시작은 미약하였으나 네 나중은 심히 창대하리라", reference: "욥기 8:7" },
+                { text: "나는 포도나무요 너희는 가지라 그가 내 안에, 내가 그 안에 거하면 사람이 열매를 많이 맺나니", reference: "요한복음 15:5" },
+                { text: "너희 마음에 그리스도의 평강이 다스리게 하라", reference: "골로새서 3:15" },
+                { text: "세상에서는 너희가 환난을 당하나 담대하라 내가 세상을 이기었노라", reference: "요한복음 16:33" },
+                { text: "우리가 알거니와 하나님을 사랑하는 자 곧 그의 뜻대로 부르심을 입은 자들에게는 모든 것이 합력하여 선을 이루느니라", reference: "로마서 8:28" },
+                { text: "네가 만일 믿으면 하나님의 영광을 보리라", reference: "요한복음 11:40" },
+                { text: "하나님은 사랑이시라", reference: "요한일서 4:8" },
+                { text: "내가 곧 길이요 진리요 생명이니 나로 말미암지 않고는 아버지께로 올 자가 없느니라", reference: "요한복음 14:6" },
+                { text: "주 예수를 믿으라 그리하면 너와 네 집이 구원을 받으리라", reference: "사도행전 16:31" },
+                { text: "여호와께서 네가 가는 모든 길에서 너를 지켜 주시리로다", reference: "시편 121:8" },
+                { text: "청함을 받은 자는 많되 택함을 입은 자는 적으니라", reference: "마태복음 22:14" },
+                { text: "수고하고 무거운 짐 진 자들아 다 내게로 오라 내가 너희를 쉬게 하리라", reference: "마태복음 11:28" },
+                { text: "여호와는 나의 목자시니 내게 부족함이 없으리로다", reference: "시편 23:1" }
+            ];
+            
+            for (var day = 1; day <= 31; day++) {
+                document.getElementById('verseText' + day).value = samples[day - 1].text;
+                document.getElementById('verseRef' + day).value = samples[day - 1].reference;
+            }
+            showToast('샘플 말씀이 불러와졌습니다. 저장을 눌러주세요.');
+        }
+
+        // ========== 아이콘 피커 ==========
+        function initIconPickers() {
+            var linkPicker = document.getElementById('iconPicker');
+            linkPicker.innerHTML = linkIcons.map(function(icon) {
+                return '<div class="icon-option' + (icon === selectedIcon ? ' selected' : '') + '" onclick="selectLinkIcon(\'' + icon + '\')">' + icon + '</div>';
+            }).join('');
+
+            var deptPicker = document.getElementById('deptIconPicker');
+            deptPicker.innerHTML = deptIcons.map(function(icon) {
+                return '<div class="icon-option' + (icon === selectedDeptIcon ? ' selected' : '') + '" onclick="selectDeptIcon(\'' + icon + '\')">' + icon + '</div>';
+            }).join('');
+        }
+
+        function selectLinkIcon(icon) {
+            selectedIcon = icon;
+            document.querySelectorAll('#iconPicker .icon-option').forEach(function(o) {
+                o.classList.toggle('selected', o.textContent === icon);
+            });
+        }
+
+        function selectDeptIcon(icon) {
+            selectedDeptIcon = icon;
+            document.querySelectorAll('#deptIconPicker .icon-option').forEach(function(o) {
+                o.classList.toggle('selected', o.textContent === icon);
+            });
+        }
+
+        // ========== 즐겨찾기 ==========
+        function renderQuickLinks() {
+            // order 기준 정렬
+            var sortedLinks = links.slice().sort(function(a, b) {
+                return (a.order || 0) - (b.order || 0);
+            });
+            var html = sortedLinks.map(function(l) {
+                return '<a href="' + l.url + '" target="_blank" class="quick-link"><span class="link-icon">' + (l.icon || '🔗') + '</span><span class="link-text">' + l.name + '</span></a>';
+            }).join('');
+            
+            if (sortedLinks.length === 0) {
+                html = '<p style="color:var(--text-light); text-align:center; padding:20px;">즐겨찾기가 없습니다. 관리에서 추가하세요.</p>';
+            }
+            
+            document.getElementById('quickLinks').innerHTML = html;
+        }
+
+        function openLinkModal() {
+            document.getElementById('linkEditId').value = '';
+            document.getElementById('linkName').value = '';
+            document.getElementById('linkUrl').value = '';
+            document.getElementById('linkModalTitle').textContent = '즐겨찾기 추가';
+            document.getElementById('deleteLinkBtn').style.display = 'none';
+            selectedIcon = '🔗';
+            initIconPickers();
+            openModal('linkModal');
+        }
+
+        function editLink(id) {
+            var link = links.find(function(l) { return l.id === id; });
+            if (!link) return;
+            document.getElementById('linkEditId').value = id;
+            document.getElementById('linkName').value = link.name;
+            document.getElementById('linkUrl').value = link.url;
+            document.getElementById('linkModalTitle').textContent = '즐겨찾기 수정';
+            document.getElementById('deleteLinkBtn').style.display = 'block';
+            selectedIcon = link.icon || '🔗';
+            initIconPickers();
+            openModal('linkModal');
+        }
+
+        function saveLink() {
+            if (!db) { showToast('연결 실패'); return; }
+            var id = document.getElementById('linkEditId').value;
+            var name = document.getElementById('linkName').value.trim();
+            var url = document.getElementById('linkUrl').value.trim();
+            if (!name || !url) { showToast('이름과 URL을 입력해주세요'); return; }
+
+            var data = { name: name, url: url, icon: selectedIcon };
+            if (id) {
+                db.ref('links/' + id).update(data).then(function() {
+                    closeModal('linkModal');
+                    showToast('저장되었습니다');
+                });
+            } else {
+                // 새 링크는 마지막 순서로 추가
+                var maxOrder = links.reduce(function(max, l) {
+                    return Math.max(max, l.order || 0);
+                }, 0);
+                data.order = maxOrder + 1;
+                db.ref('links').push(data).then(function() {
+                    closeModal('linkModal');
+                    showToast('저장되었습니다');
+                });
+            }
+        }
+
+        function deleteLink() {
+            if (!db) return;
+            var id = document.getElementById('linkEditId').value;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('links/' + id).remove().then(function() {
+                closeModal('linkModal');
+                showToast('삭제되었습니다');
+            });
+        }
+
+        var linkSortable = null;
+
+        function openLinkManageModal() {
+            renderLinkOrderList();
+            openModal('linkOrderModal');
+        }
+
+        function renderLinkOrderList() {
+            var container = document.getElementById('linkOrderList');
+            // order 기준 정렬
+            var sortedLinks = links.slice().sort(function(a, b) {
+                return (a.order || 0) - (b.order || 0);
+            });
+
+            if (sortedLinks.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-light);">즐겨찾기가 없습니다</p>';
+                return;
+            }
+
+            var html = sortedLinks.map(function(l) {
+                return '<div class="link-order-item" data-id="' + l.id + '">' +
+                    '<span class="drag-handle">☰</span>' +
+                    '<span class="link-icon">' + (l.icon || '🔗') + '</span>' +
+                    '<span class="link-name">' + l.name + '</span>' +
+                    '<div class="link-manage-btns">' +
+                    '<button class="link-edit-btn" onclick="event.stopPropagation();editLinkFromManage(\'' + l.id + '\')">✏️</button>' +
+                    '<button class="link-delete-btn" onclick="event.stopPropagation();deleteLinkDirect(\'' + l.id + '\')">🗑️</button>' +
+                    '</div></div>';
+            }).join('');
+
+            container.innerHTML = html;
+
+            // SortableJS 초기화
+            if (linkSortable) {
+                linkSortable.destroy();
+            }
+
+            linkSortable = new Sortable(container, {
+                animation: 150,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: function(evt) {
+                    saveLinkOrder();
+                }
+            });
+        }
+
+        function editLinkFromManage(id) {
+            closeModal('linkOrderModal');
+            editLink(id);
+        }
+
+        function deleteLinkDirect(id) {
+            if (!db) return;
+            var link = links.find(function(l) { return l.id === id; });
+            if (!confirm('"' + (link ? link.name : '') + '" 을(를) 삭제하시겠습니까?')) return;
+            db.ref('links/' + id).remove().then(function() {
+                showToast('삭제되었습니다');
+                renderLinkOrderList();
+            });
+        }
+
+        function saveLinkOrder() {
+            if (!db) return;
+
+            var container = document.getElementById('linkOrderList');
+            var items = container.querySelectorAll('.link-order-item');
+            var updates = {};
+
+            items.forEach(function(item, index) {
+                var id = item.getAttribute('data-id');
+                updates['links/' + id + '/order'] = index;
+            });
+
+            db.ref().update(updates).then(function() {
+                showToast('순서가 저장되었습니다');
+            });
+        }
+
+        // ========== 공지사항 ==========
+        function addNotice() {
+            if (!db) { showToast('연결 실패'); return; }
+            var title = document.getElementById('noticeTitle').value.trim();
+            var content = document.getElementById('noticeContent').value.trim();
+            var important = document.getElementById('noticeImportant').checked;
+            if (!title || !content) { showToast('제목과 내용을 입력해주세요'); return; }
+
+            db.ref('notices').push({
+                title: title, content: content, important: important,
+                date: new Date().toISOString()
+            }).then(function() {
+                document.getElementById('noticeTitle').value = '';
+                document.getElementById('noticeContent').value = '';
+                document.getElementById('noticeImportant').checked = false;
+                document.getElementById('noticeAdminPanel').classList.remove('show');
+                showToast('공지가 등록되었습니다');
+            });
+        }
+
+        function renderNotices() {
+            var container = document.getElementById('noticeList');
+            if (notices.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">📭</div><p>공지사항이 없습니다</p></div>';
+                return;
+            }
+            container.innerHTML = notices.map(function(n) {
+                return '<div class="notice-item" onclick="openNoticeDetail(\'' + n.id + '\')"><div class="notice-header"><span class="notice-title">' + (n.important ? '<span class="notice-badge">중요</span>' : '') + n.title + '</span><span class="notice-date">' + formatDate(n.date) + '</span></div><button class="notice-delete" onclick="event.stopPropagation();deleteNotice(\'' + n.id + '\')">🗑️</button></div>';
+            }).join('');
+        }
+
+        function renderRecentNotices() {
+            var container = document.getElementById('recentNotices');
+            var recent = notices.slice(0, 3);
+            if (recent.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-light)">등록된 공지가 없습니다</p>';
+                return;
+            }
+            container.innerHTML = recent.map(function(n) {
+                return '<div class="notice-item" onclick="openNoticeDetail(\'' + n.id + '\')"><div class="notice-header"><span class="notice-title">' + (n.important ? '<span class="notice-badge">중요</span>' : '') + n.title + '</span><span class="notice-date">' + formatDate(n.date) + '</span></div></div>';
+            }).join('');
+        }
+
+        function openNoticeDetail(id) {
+            var n = notices.find(function(x) { return x.id === id; });
+            if (!n) return;
+            currentNoticeId = id;
+            document.getElementById('noticeModalTitle').textContent = n.title;
+            document.getElementById('noticeModalDate').textContent = formatDate(n.date);
+            document.getElementById('noticeModalContent').textContent = n.content;
+            renderComments(id);
+            openModal('noticeModal');
+        }
+
+        function deleteNotice(id) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('notices/' + id).remove();
+            db.ref('comments/' + id).remove();
+            showToast('삭제되었습니다');
+        }
+
+        // ========== 댓글 ==========
+        function renderComments(noticeId) {
+            var container = document.getElementById('noticeComments');
+            var list = comments[noticeId] || [];
+            document.getElementById('commentCount').textContent = list.length > 0 ? '(' + list.length + ')' : '';
+
+            if (list.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-light)">첫 댓글을 남겨보세요!</p>';
+                return;
+            }
+            container.innerHTML = list.map(function(c) {
+                return '<div class="comment-item"><button class="comment-delete" onclick="deleteComment(\'' + noticeId + '\',\'' + c.id + '\')">×</button><div class="comment-header"><span class="comment-author">' + c.author + '</span><span class="comment-date">' + formatDateTime(c.date) + '</span></div><p class="comment-content">' + c.content + '</p></div>';
+            }).join('');
+        }
+
+        function addComment() {
+            if (!db || !currentNoticeId) return;
+            var author = document.getElementById('commentAuthor').value.trim() || '익명';
+            var content = document.getElementById('commentContent').value.trim();
+            if (!content) { showToast('댓글을 입력해주세요'); return; }
+
+            db.ref('comments/' + currentNoticeId).push({
+                author: author, content: content, date: new Date().toISOString()
+            }).then(function() {
+                document.getElementById('commentAuthor').value = '';
+                document.getElementById('commentContent').value = '';
+                showToast('댓글이 등록되었습니다');
+            });
+        }
+
+        function deleteComment(noticeId, commentId) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('comments/' + noticeId + '/' + commentId).remove();
+        }
+
+        // ========== 기도제목 ==========
+        function updatePrayerMonth() {
+            var m = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+            document.getElementById('currentMonth').textContent = currentPrayerMonth.getFullYear() + '년 ' + m[currentPrayerMonth.getMonth()];
+        }
+
+        function changeMonth(d) {
+            currentPrayerMonth.setMonth(currentPrayerMonth.getMonth() + d);
+            renderPrayers();
+        }
+
+        function openPrayerModal(editId) {
+            document.getElementById('prayerEditId').value = '';
+            document.getElementById('prayerAuthor').value = '';
+            document.getElementById('prayerContent').value = '';
+            document.getElementById('prayerModalTitle').textContent = '기도제목 올리기';
+
+            if (editId) {
+                var p = prayers.find(function(x) { return x.id === editId; });
+                if (p) {
+                    document.getElementById('prayerEditId').value = editId;
+                    document.getElementById('prayerAuthor').value = p.author;
+                    document.getElementById('prayerContent').value = p.content;
+                    document.getElementById('prayerModalTitle').textContent = '기도제목 수정';
+                }
+            }
+            openModal('prayerModal');
+        }
+
+        function savePrayer() {
+            if (!db) { showToast('연결 실패'); return; }
+            var editId = document.getElementById('prayerEditId').value;
+            var author = document.getElementById('prayerAuthor').value.trim() || '익명';
+            var content = document.getElementById('prayerContent').value.trim();
+            if (!content) { showToast('기도제목을 입력해주세요'); return; }
+
+            var monthKey = currentPrayerMonth.getFullYear() + '-' + String(currentPrayerMonth.getMonth()+1).padStart(2,'0');
+            var data = { author: author, content: content, date: new Date().toISOString(), month: monthKey };
+
+            var promise = editId ? db.ref('prayers/' + editId).update(data) : db.ref('prayers').push(data);
+            promise.then(function() {
+                closeModal('prayerModal');
+                showToast(editId ? '수정되었습니다' : '등록되었습니다');
+            });
+        }
+
+        function renderPrayers() {
+            updatePrayerMonth();
+            var container = document.getElementById('prayerList');
+            var monthKey = currentPrayerMonth.getFullYear() + '-' + String(currentPrayerMonth.getMonth()+1).padStart(2,'0');
+            var filtered = prayers.filter(function(p) { return p.month === monthKey; });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">🙏</div><p>이번 달 기도제목이 없습니다</p></div>';
+                return;
+            }
+            container.innerHTML = filtered.map(function(p) {
+                return '<div class="prayer-item"><div class="prayer-actions"><button onclick="openPrayerModal(\'' + p.id + '\')">✏️</button><button onclick="deletePrayer(\'' + p.id + '\')">🗑️</button></div><p class="prayer-author">' + p.author + '</p><p class="prayer-content">' + p.content + '</p><p class="prayer-date">' + formatDate(p.date) + '</p></div>';
+            }).join('');
+        }
+
+        function deletePrayer(id) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('prayers/' + id).remove();
+            showToast('삭제되었습니다');
+        }
+
+        // ========== 감사제목 ==========
+        function changeThanksMonth(d) {
+            currentThanksMonth.setMonth(currentThanksMonth.getMonth() + d);
+            renderThanks();
+        }
+
+        function renderThanks() {
+            var container = document.getElementById('thanksList');
+            var monthKey = currentThanksMonth.getFullYear() + '-' + String(currentThanksMonth.getMonth() + 1).padStart(2, '0');
+            document.getElementById('currentThanksMonth').textContent = currentThanksMonth.getFullYear() + '년 ' + (currentThanksMonth.getMonth() + 1) + '월';
+
+            var filtered = thanks.filter(function(t) {
+                return t.month === monthKey;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">💝</div><p>이번 달 감사제목이 없습니다</p></div>';
+                return;
+            }
+            container.innerHTML = filtered.map(function(t) {
+                return '<div class="prayer-item thanks-item"><div class="prayer-actions"><button onclick="openThanksModal(\'' + t.id + '\')">✏️</button><button onclick="deleteThanks(\'' + t.id + '\')">🗑️</button></div><p class="prayer-author">' + (t.author || '익명') + '</p><p class="prayer-content">' + t.content + '</p><p class="prayer-date">' + formatDate(t.date) + '</p></div>';
+            }).join('');
+        }
+
+        function openThanksModal(editId) {
+            document.getElementById('thanksEditId').value = '';
+            document.getElementById('thanksAuthor').value = '';
+            document.getElementById('thanksContent').value = '';
+            document.getElementById('thanksModalTitle').textContent = '감사제목 올리기';
+
+            if (editId) {
+                var t = thanks.find(function(x) { return x.id === editId; });
+                if (t) {
+                    document.getElementById('thanksEditId').value = editId;
+                    document.getElementById('thanksAuthor').value = t.author || '';
+                    document.getElementById('thanksContent').value = t.content || '';
+                    document.getElementById('thanksModalTitle').textContent = '감사제목 수정';
+                }
+            }
+            openModal('thanksModal');
+        }
+
+        function saveThanks() {
+            if (!db) { showToast('연결 실패'); return; }
+            var editId = document.getElementById('thanksEditId').value;
+            var author = document.getElementById('thanksAuthor').value.trim() || '익명';
+            var content = document.getElementById('thanksContent').value.trim();
+            if (!content) { showToast('감사 내용을 입력해주세요'); return; }
+
+            var monthKey = currentThanksMonth.getFullYear() + '-' + String(currentThanksMonth.getMonth() + 1).padStart(2, '0');
+            var data = { author: author, content: content, month: monthKey, date: new Date().toISOString() };
+
+            var promise = editId ? db.ref('thanks/' + editId).update(data) : db.ref('thanks').push(data);
+            promise.then(function() {
+                closeModal('thanksModal');
+                showToast(editId ? '수정되었습니다' : '등록되었습니다');
+            });
+        }
+
+        function deleteThanks(id) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('thanks/' + id).remove();
+            showToast('삭제되었습니다');
+        }
+
+        // ========== 일정 ==========
+        function changeCalendarMonth(d) {
+            currentCalendarMonth.setMonth(currentCalendarMonth.getMonth() + d);
+            selectedDate = null;
+            document.getElementById('selectedDateInfo').style.display = 'none';
+            renderCalendar();
+            renderSchedules();
+        }
+
+        function selectDate(year, month, day) {
+            if (month !== currentCalendarMonth.getMonth() || year !== currentCalendarMonth.getFullYear()) {
+                currentCalendarMonth = new Date(year, month, 1);
+                renderCalendar();
+                renderSchedules();
+            }
+            selectedDate = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+            renderCalendar();
+            showSelectedDateSchedules();
+        }
+
+        function showSelectedDateSchedules() {
+            var container = document.getElementById('selectedDateInfo');
+            var schedulesDiv = document.getElementById('selectedDateSchedules');
+            var titleDiv = document.getElementById('selectedDateTitle');
+            
+            var filtered = schedules.filter(function(s) { return s.date === selectedDate; });
+            var d = new Date(selectedDate + 'T00:00:00');
+            var wd = ['일','월','화','수','목','금','토'];
+            
+            titleDiv.textContent = '📅 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + wd[d.getDay()] + ')';
+            
+            if (filtered.length === 0) {
+                schedulesDiv.innerHTML = '<p style="color:var(--text-light)">이 날짜에 일정이 없습니다</p>';
+            } else {
+                schedulesDiv.innerHTML = filtered.map(function(s) {
+                    return '<div class="selected-schedule-item">' +
+                        '<div class="schedule-actions">' +
+                        '<button class="edit-btn" onclick="editSchedule(\'' + s.id + '\')" title="수정">✏️</button>' +
+                        '<button class="delete-btn" onclick="deleteSchedule(\'' + s.id + '\')" title="삭제">🗑️</button>' +
+                        '</div>' +
+                        '<div class="schedule-title">📌 ' + linkify(s.title) + '</div>' +
+                        (s.time ? '<div class="schedule-time">🕐 ' + s.time + '</div>' : '') +
+                        '</div>';
+                }).join('');
+            }
+            container.style.display = 'block';
+        }
+
+        function openQuickScheduleModal(editId) {
+            if (!selectedDate && !editId) { showToast('먼저 날짜를 선택해주세요'); return; }
+            
+            var d, wd = ['일','월','화','수','목','금','토'];
+            var dateGroup = document.getElementById('scheduleDateGroup');
+            var dateInput = document.getElementById('quickScheduleDate');
+            
+            if (editId) {
+                // 수정 모드 - 날짜 변경 가능
+                var schedule = schedules.find(function(s) { return s.id === editId; });
+                if (!schedule) return;
+                
+                d = new Date(schedule.date + 'T00:00:00');
+                document.getElementById('scheduleEditId').value = editId;
+                document.getElementById('quickScheduleTitle').textContent = '✏️ 일정 수정';
+                document.getElementById('quickScheduleInput').value = schedule.title;
+                document.getElementById('quickScheduleTime').value = schedule.time || '';
+                document.getElementById('scheduleSubmitBtn').textContent = '수정';
+                dateInput.value = schedule.date;
+                dateGroup.style.display = 'block';
+                selectedDate = schedule.date;
+            } else {
+                // 등록 모드 - 날짜 숨김 (이미 선택됨)
+                d = new Date(selectedDate + 'T00:00:00');
+                document.getElementById('scheduleEditId').value = '';
+                document.getElementById('quickScheduleTitle').textContent = '📅 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 (' + wd[d.getDay()] + ') 일정 등록';
+                document.getElementById('quickScheduleInput').value = '';
+                document.getElementById('quickScheduleTime').value = '';
+                document.getElementById('scheduleSubmitBtn').textContent = '등록';
+                dateGroup.style.display = 'none';
+            }
+            
+            // textarea 높이 초기화
+            var textarea = document.getElementById('quickScheduleInput');
+            textarea.style.height = 'auto';
+            setTimeout(function() { autoResize(textarea); }, 10);
+            
+            openModal('quickScheduleModal');
+        }
+
+        function editSchedule(id) {
+            openQuickScheduleModal(id);
+        }
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+        }
+
+        function saveQuickSchedule() {
+            if (!db) { showToast('연결 실패'); return; }
+            var editId = document.getElementById('scheduleEditId').value;
+            var title = document.getElementById('quickScheduleInput').value.trim();
+            var time = document.getElementById('quickScheduleTime').value.trim();
+            if (!title) { showToast('일정 내용을 입력해주세요'); return; }
+
+            // 수정 모드일 때는 날짜 입력값 사용, 등록 모드일 때는 selectedDate 사용
+            var scheduleDate = editId 
+                ? document.getElementById('quickScheduleDate').value 
+                : selectedDate;
+            
+            if (!scheduleDate) { showToast('날짜를 선택해주세요'); return; }
+
+            var data = { date: scheduleDate, title: title, time: time || '' };
+
+            if (editId) {
+                // 수정
+                console.log('일정 수정:', { id: editId, ...data });
+                db.ref('schedules/' + editId).update(data).then(function() {
+                    closeModal('quickScheduleModal');
+                    showToast('일정이 수정되었습니다');
+                    renderCalendar();
+                    renderSchedules();
+                    if (selectedDate) showSelectedDateSchedules();
+                }).catch(function(e) {
+                    console.error('수정 실패:', e);
+                    showToast('수정 실패');
+                });
+            } else {
+                // 등록
+                console.log('일정 저장:', data);
+                db.ref('schedules').push(data).then(function() {
+                    console.log('저장 성공');
+                    closeModal('quickScheduleModal');
+                    showToast('일정이 등록되었습니다');
+                }).catch(function(e) {
+                    console.error('저장 실패:', e);
+                    showToast('등록 실패');
+                });
+            }
+        }
+
+        function renderCalendar() {
+            var m = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+            document.getElementById('calendarMonth').textContent = currentCalendarMonth.getFullYear() + '년 ' + m[currentCalendarMonth.getMonth()];
+
+            var grid = document.getElementById('calendarGrid');
+            var year = currentCalendarMonth.getFullYear();
+            var month = currentCalendarMonth.getMonth();
+            var firstDay = new Date(year, month, 1).getDay();
+            var totalDays = new Date(year, month+1, 0).getDate();
+            var today = new Date();
+            var todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+            var eventDates = schedules.map(function(s) { return s.date; });
+
+            var html = '<div class="calendar-day-name">일</div><div class="calendar-day-name">월</div><div class="calendar-day-name">화</div><div class="calendar-day-name">수</div><div class="calendar-day-name">목</div><div class="calendar-day-name">금</div><div class="calendar-day-name">토</div>';
+
+            // 이전 달
+            var prevMonth = month === 0 ? 11 : month - 1;
+            var prevYear = month === 0 ? year - 1 : year;
+            var prevLast = new Date(year, month, 0).getDate();
+            for (var i = firstDay - 1; i >= 0; i--) {
+                var day = prevLast - i;
+                var dateStr = prevYear + '-' + String(prevMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+                var hasEvent = eventDates.indexOf(dateStr) !== -1;
+                html += '<div class="calendar-day other-month' + (hasEvent ? ' has-event' : '') + '" onclick="selectDate(' + prevYear + ',' + prevMonth + ',' + day + ')">' + day + '</div>';
+            }
+
+            // 현재 달
+            for (var day = 1; day <= totalDays; day++) {
+                var dateStr = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+                var cls = 'calendar-day';
+                if (dateStr === todayStr) cls += ' today';
+                if (dateStr === selectedDate) cls += ' selected';
+                if (eventDates.indexOf(dateStr) !== -1) cls += ' has-event';
+                if ((firstDay + day - 1) % 7 === 0) cls += ' sunday';
+                html += '<div class="' + cls + '" onclick="selectDate(' + year + ',' + month + ',' + day + ')">' + day + '</div>';
+            }
+
+            // 다음 달
+            var nextMonth = month === 11 ? 0 : month + 1;
+            var nextYear = month === 11 ? year + 1 : year;
+            var rem = 42 - (firstDay + totalDays);
+            for (var d = 1; d <= rem; d++) {
+                var dateStr = nextYear + '-' + String(nextMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+                var hasEvent = eventDates.indexOf(dateStr) !== -1;
+                html += '<div class="calendar-day other-month' + (hasEvent ? ' has-event' : '') + '" onclick="selectDate(' + nextYear + ',' + nextMonth + ',' + d + ')">' + d + '</div>';
+            }
+
+            grid.innerHTML = html;
+        }
+
+        function renderSchedules(searchKeyword) {
+            var container = document.getElementById('monthSchedules');
+            var year = currentCalendarMonth.getFullYear();
+            var month = currentCalendarMonth.getMonth();
+            var monthKey = year + '-' + String(month+1).padStart(2,'0');
+            var filtered;
+            var isSearchMode = searchKeyword && searchKeyword.trim();
+            
+            if (isSearchMode) {
+                // 검색 모드: 이전 1년 ~ 이후 5년 범위
+                var now = new Date();
+                var startDate = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+                var endDate = new Date(now.getFullYear() + 5, now.getMonth(), 28);
+                var startKey = startDate.getFullYear() + '-' + String(startDate.getMonth()+1).padStart(2,'0') + '-01';
+                var endKey = endDate.getFullYear() + '-' + String(endDate.getMonth()+1).padStart(2,'0') + '-28';
+                
+                var keyword = searchKeyword.trim().toLowerCase();
+                filtered = schedules.filter(function(s) {
+                    if (!s.date || s.date < startKey || s.date > endKey) return false;
+                    return (s.title && s.title.toLowerCase().indexOf(keyword) !== -1) ||
+                           (s.time && s.time.toLowerCase().indexOf(keyword) !== -1);
+                });
+            } else {
+                // 일반 모드: 이번 달만
+                filtered = schedules.filter(function(s) { return s.date && s.date.indexOf(monthKey) === 0; });
+            }
+            
+            filtered.sort(function(a, b) { return a.date.localeCompare(b.date); });
+            var wd = ['일','월','화','수','목','금','토'];
+
+            if (filtered.length === 0) {
+                if (isSearchMode) {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>검색 결과가 없습니다</p><p style="font-size:0.85rem;color:var(--text-light);">최근 1년 ~ 향후 5년 범위</p></div>';
+                } else {
+                    container.innerHTML = '<div class="empty-state"><div class="icon">📅</div><p>이번 달 일정이 없습니다</p></div>';
+                }
+                return;
+            }
+
+            container.innerHTML = filtered.map(function(s) {
+                var d = new Date(s.date + 'T00:00:00');
+                var dateDisplay = isSearchMode 
+                    ? '<div class="schedule-day">' + (d.getMonth()+1) + '/' + d.getDate() + '</div><div class="schedule-weekday">' + d.getFullYear() + '</div>'
+                    : '<div class="schedule-day">' + d.getDate() + '</div><div class="schedule-weekday">' + wd[d.getDay()] + '</div>';
+                return '<div class="schedule-item">' +
+                    '<div class="schedule-date">' + dateDisplay + '</div>' +
+                    '<div class="schedule-info">' +
+                    '<div class="schedule-title-row">' +
+                    '<div class="schedule-title">' + linkify(s.title) + '</div>' +
+                    '<div class="schedule-item-btns">' +
+                    '<button class="edit-btn" onclick="editSchedule(\'' + s.id + '\')">✏️</button>' +
+                    '<button class="delete-btn" onclick="deleteSchedule(\'' + s.id + '\')">🗑️</button>' +
+                    '</div></div>' +
+                    (s.time ? '<div class="schedule-time">🕐 ' + s.time + '</div>' : '') +
+                    '</div></div>';
+            }).join('');
+            
+            // 검색 모드일 때 결과 개수 표시
+            if (isSearchMode) {
+                container.insertAdjacentHTML('afterbegin', '<p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px;">🔍 검색 결과: ' + filtered.length + '건 (최근 1년 ~ 향후 5년)</p>');
+            }
+        }
+
+        function searchSchedules() {
+            var keyword = document.getElementById('scheduleSearchInput').value;
+            renderSchedules(keyword);
+        }
+
+        function deleteSchedule(id) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('schedules/' + id).remove().then(function() {
+                showToast('삭제되었습니다');
+            });
+        }
+
+        // ========== 부서 ==========
+        function renderDeptTabs() {
+            var container = document.getElementById('deptTabs');
+            if (departments.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-light)">부서가 없습니다. "부서 관리"에서 추가하세요.</p>';
+                return;
+            }
+            container.innerHTML = departments.map(function(d) {
+                return '<button class="dept-tab' + (currentDept === d.id ? ' active' : '') + '" onclick="switchDept(\'' + d.id + '\')">' + (d.icon || '👥') + ' ' + d.name + '</button>';
+            }).join('');
+        }
+
+        function updateDeptSelect() {
+            var select = document.getElementById('deptPostDept');
+            if (departments.length > 0) {
+                select.innerHTML = departments.map(function(d) { return '<option value="' + d.id + '">' + d.name + '</option>'; }).join('');
+            } else {
+                select.innerHTML = '<option value="">부서를 먼저 추가하세요</option>';
+            }
+        }
+
+        function switchDept(id) {
+            currentDept = id;
+            renderDeptTabs();
+            renderDeptPosts();
+        }
+
+        function openDeptManageModal() {
+            renderDeptManageList();
+            openModal('deptManageModal');
+        }
+
+        function renderDeptManageList() {
+            var container = document.getElementById('deptManageList');
+            if (departments.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-light); text-align:center;">등록된 부서가 없습니다</p>';
+                return;
+            }
+            container.innerHTML = departments.map(function(d) {
+                return '<div class="dept-manage-item"><div class="dept-manage-info"><span class="dept-manage-icon">' + (d.icon || '👥') + '</span><span class="dept-manage-name">' + d.name + '</span></div><div class="dept-manage-actions"><button class="dept-edit-btn" onclick="editDept(\'' + d.id + '\')">✏️ 수정</button><button class="dept-delete-btn" onclick="deleteDept(\'' + d.id + '\')">🗑️ 삭제</button></div></div>';
+            }).join('');
+        }
+
+        function openDeptAddModal() {
+            document.getElementById('deptEditId').value = '';
+            document.getElementById('deptName').value = '';
+            document.getElementById('deptModalTitle').textContent = '부서 추가';
+            selectedDeptIcon = '👔';
+            initIconPickers();
+            openModal('deptModal');
+        }
+
+        function editDept(id) {
+            var dept = departments.find(function(d) { return d.id === id; });
+            if (!dept) return;
+            document.getElementById('deptEditId').value = id;
+            document.getElementById('deptName').value = dept.name;
+            document.getElementById('deptModalTitle').textContent = '부서 수정';
+            selectedDeptIcon = dept.icon || '👔';
+            initIconPickers();
+            closeModal('deptManageModal');
+            openModal('deptModal');
+        }
+
+        function saveDept() {
+            if (!db) { showToast('연결 실패'); return; }
+            var id = document.getElementById('deptEditId').value;
+            var name = document.getElementById('deptName').value.trim();
+            if (!name) { showToast('부서 이름을 입력해주세요'); return; }
+
+            console.log('부서 저장:', { id: id, name: name, icon: selectedDeptIcon });
+
+            if (id) {
+                db.ref('departments/' + id).update({ name: name, icon: selectedDeptIcon }).then(function() {
+                    console.log('부서 수정 성공');
+                    closeModal('deptModal');
+                    showToast('저장되었습니다');
+                }).catch(function(e) {
+                    console.error('부서 수정 실패:', e);
+                    showToast('저장 실패');
+                });
+            } else {
+                db.ref('departments').push({ name: name, icon: selectedDeptIcon, order: departments.length + 1 }).then(function() {
+                    console.log('부서 추가 성공');
+                    closeModal('deptModal');
+                    showToast('저장되었습니다');
+                }).catch(function(e) {
+                    console.error('부서 추가 실패:', e);
+                    showToast('저장 실패');
+                });
+            }
+        }
+
+        function deleteDept(id) {
+            if (!db) return;
+            if (!confirm('이 부서를 삭제하시겠습니까?')) return;
+            db.ref('departments/' + id).remove();
+            db.ref('deptPosts/' + id).remove();
+            renderDeptManageList();
+            showToast('삭제되었습니다');
+        }
+
+        function togglePasswordField() {
+            var checkbox = document.getElementById('deptPostLocked');
+            var field = document.getElementById('passwordField');
+            field.classList.toggle('active', checkbox.checked);
+        }
+
+        function renderDeptPosts() {
+            var container = document.getElementById('deptContents');
+            if (departments.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>부서를 먼저 추가해주세요</p></div>';
+                return;
+            }
+            if (!currentDept) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">👆</div><p>부서를 선택해주세요</p></div>';
+                return;
+            }
+            var posts = deptPosts[currentDept] || [];
+            if (posts.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>게시글이 없습니다</p></div>';
+                return;
+            }
+
+            container.innerHTML = posts.map(function(p) {
+                return '<div class="dept-post' + (p.locked ? ' locked' : '') + '" onclick="openDeptPostDetail(\'' + currentDept + '\',\'' + p.id + '\')"><div class="dept-post-header"><span class="dept-post-title">' + (p.locked ? '<span class="lock-icon">🔒</span>' : '') + p.title + '</span><span class="dept-post-date">' + formatDate(p.date) + '</span></div><p class="dept-post-preview">' + (p.locked ? '🔐 비밀번호가 필요합니다' : (p.content.length > 100 ? p.content.substring(0,100) + '...' : p.content)) + '</p><button class="delete-btn" onclick="event.stopPropagation();deleteDeptPost(\'' + currentDept + '\',\'' + p.id + '\')">🗑️ 삭제</button></div>';
+            }).join('');
+        }
+
+        function openDeptPostDetail(deptId, postId) {
+            var posts = deptPosts[deptId] || [];
+            var post = posts.find(function(p) { return p.id === postId; });
+            if (!post) return;
+
+            if (post.locked && post.password) {
+                pendingPost = { deptId: deptId, post: post };
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordError').classList.remove('show');
+                openModal('passwordModal');
+            } else {
+                showDeptPostContent(post);
+            }
+        }
+
+        function showDeptPostContent(post) {
+            document.getElementById('deptPostModalTitle').textContent = post.title;
+            document.getElementById('deptPostModalBody').innerHTML = '<p style="color:var(--text-light); margin-bottom: 16px;">' + formatDateTime(post.date) + '</p><div style="line-height: 1.8; white-space: pre-wrap;">' + post.content + '</div>';
+            openModal('deptPostModal');
+        }
+
+        function checkPassword() {
+            if (!pendingPost) return;
+            var input = document.getElementById('passwordInput').value;
+            if (input === pendingPost.post.password) {
+                closeModal('passwordModal');
+                showDeptPostContent(pendingPost.post);
+                pendingPost = null;
+            } else {
+                document.getElementById('passwordError').classList.add('show');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        function addDeptPost() {
+            if (!db) { showToast('연결 실패'); return; }
+            var deptId = document.getElementById('deptPostDept').value;
+            if (!deptId) { showToast('부서를 먼저 추가해주세요'); return; }
+            var title = document.getElementById('deptPostTitle').value.trim();
+            var content = document.getElementById('deptPostContent').value.trim();
+            var locked = document.getElementById('deptPostLocked').checked;
+            var password = document.getElementById('deptPostPassword').value.trim();
+            if (!title || !content) { showToast('제목과 내용을 입력해주세요'); return; }
+            if (locked && !password) { showToast('비밀번호를 입력해주세요'); return; }
+
+            db.ref('deptPosts/' + deptId).push({
+                title: title, content: content, date: new Date().toISOString(),
+                locked: locked, password: locked ? password : null
+            }).then(function() {
+                document.getElementById('deptPostTitle').value = '';
+                document.getElementById('deptPostContent').value = '';
+                document.getElementById('deptPostLocked').checked = false;
+                document.getElementById('deptPostPassword').value = '';
+                document.getElementById('passwordField').classList.remove('active');
+                document.getElementById('deptAdminPanel').classList.remove('show');
+                showToast('게시글이 등록되었습니다');
+            });
+        }
+
+        function deleteDeptPost(deptId, postId) {
+            if (!db) return;
+            if (!confirm('삭제하시겠습니까?')) return;
+            db.ref('deptPosts/' + deptId + '/' + postId).remove();
+            showToast('삭제되었습니다');
+        }
+    </script>
+</body>
+</html>
